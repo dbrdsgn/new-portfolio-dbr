@@ -4,49 +4,90 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Денис Сивухин — графический дизайнер</title>
+    <link rel="preload" href="ids/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+    <link rel="stylesheet" href="ids/css/tokens/palette.css" />
+    <link rel="stylesheet" href="ids/css/tokens/colors.css" />
+    <link rel="stylesheet" href="ids/css/tokens/scales.css" />
+    <link rel="stylesheet" href="ids/css/settings.css" />
+    <link rel="stylesheet" href="ids/css/reset.css" />
+    <link rel="stylesheet" href="ids/css/page-composition/layout.css" />
+    <link rel="stylesheet" href="ids/css/components/ids.css" />
   </head>
-  <body>
+  <body class="ids">
     <header>
-      <p>Денис Сивухин</p>
-      <nav>
-        <a href="#works">Работы</a>
-        <a href="#about">О себе</a>
-      </nav>
+      <div class="ids__wrapper">
+        <p>Денис Сивухин</p>
+        <nav class="ids__promo-link" aria-label="Разделы страницы">
+          <a href="#works">Работы</a>
+          <a href="#about">О себе</a>
+        </nav>
+      </div>
     </header>
 
     <main>
-      <section id="hero">
-        <h1>Графический дизайнер</h1>
-        <p>Навигация, упаковка, брендинг, веб</p>
-      </section>
+      <div class="ids__wrapper">
+        <div class="ids__space XL"></div>
+        <div class="ids__text-width">
+          <h1>Графический дизайнер</h1>
+          <p class="loud">Навигация, упаковка, брендинг, веб</p>
+        </div>
 
-      <section id="works">
-        <h2>Работы</h2>
-        <article>
-          <a href="cases/era/era-01.avif">
-            <img src="cases/era/era-01.avif" alt="Кейс Era" />
-            <h3>Era</h3>
-          </a>
-        </article>
-      </section>
+        <div class="ids__space L"></div>
 
-      <section id="about">
-        <h2>О себе</h2>
-        <img src="author-photo.jpeg" alt="Денис Сивухин" width="240" />
-        <p>
-          Я — Денис Сивухин, графический дизайнер, делаю навигацию, упаковку,
-          брендинг, веб.
-        </p>
-        <p>
-          Работал с Студией Артемия Лебедева, НИУ ВШЭ, ВК, МТС, Т1, Лукойл,
-          Озон, Рутуб.
-        </p>
-        <p>За 6 лет сделал 44 проекта. Лучшие из них на сайте.</p>
-      </section>
+        <section id="works">
+          <div class="ids__text-width">
+            <h2>Работы</h2>
+          </div>
+          <div class="ids__sequence XL gap-M">
+            <div class="ids__sequence-item">
+              <article>
+                <figure class="ids__rounded">
+                  <a href="cases/era/era-01.avif">
+                    <img src="cases/era/era-01.avif" alt="Кейс Era" />
+                  </a>
+                  <figcaption>
+                    <h3>Era</h3>
+                  </figcaption>
+                </figure>
+              </article>
+            </div>
+          </div>
+        </section>
+
+        <div class="ids__space L"></div>
+
+        <section id="about">
+          <div class="ids__text-width">
+            <h2>О себе</h2>
+          </div>
+          <div class="ids__sequence XL gap-M">
+            <div class="ids__sequence-item">
+              <figure class="ids__rounded">
+                <img src="author-photo.jpeg" alt="Денис Сивухин" />
+              </figure>
+            </div>
+            <div class="ids__sequence-item">
+              <p>
+                Я — Денис Сивухин, графический дизайнер, делаю навигацию,
+                упаковку, брендинг, веб.
+              </p>
+              <p>
+                Работал с Студией Артемия Лебедева, НИУ ВШЭ, ВК, МТС, Т1, Лукойл,
+                Озон, Рутуб.
+              </p>
+              <p>За 6 лет сделал 44 проекта. Лучшие из них на сайте.</p>
+            </div>
+          </div>
+        </section>
+
+        <div class="ids__space XL"></div>
+      </div>
     </main>
 
     <footer>
-      <p>© Денис Сивухин</p>
+      <div class="ids__wrapper">
+        <p>© Денис Сивухин</p>
+      </div>
     </footer>
   </body>
 </html>
