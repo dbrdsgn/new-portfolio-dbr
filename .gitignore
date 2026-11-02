@@ -1,0 +1,29 @@
+# Исходники картинок и видео не храним в Git: они весят сотни мегабайт.
+# В репозиторий попадают только тексты (project.md, article.md)
+# и оптимизированные файлы для сайта (media/).
+# Резервная копия исходников — на стороне автора (облако).
+cases/**/*.png
+cases/**/*.jpg
+cases/**/*.jpeg
+cases/**/*.gif
+cases/**/*.mp4
+cases/**/*.mov
+cases/**/*.webm
+cases/**/*.pdf
+cases/**/*.psd
+knowledge/**/*.png
+knowledge/**/*.jpg
+knowledge/**/*.jpeg
+knowledge/**/*.gif
+
+# Проекты под NDA не публикуем
+cases/NDA/
+
+# Node.js
+node_modules/
+
+# Системные файлы
+.DS_Store
+Thumbs.db
+desktop.ini
+.cursor/

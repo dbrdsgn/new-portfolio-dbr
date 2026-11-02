@@ -1,10 +1,32 @@
 <!DOCTYPE html>
 <html lang="ru">
   <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>Денис Сивухин — графический дизайнер</title>
-    <link rel="preload" href="ids/fonts/InterVariable.woff2" as="font" type="font/woff2" crossorigin />
+    <meta name="description" content="Навигация, упаковка, брендинг, веб. Портфолио графического дизайнера Дениса Сивухина." />
+
+    <!-- Превью ссылок (Open Graph). Картинка превью добавится, когда будет готова -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Денис Сивухин" />
+    <meta property="og:title" content="Денис Сивухин — графический дизайнер" />
+    <meta property="og:description" content="Навигация, упаковка, брендинг, веб." />
+    <meta property="og:locale" content="ru_RU" />
+
+    <link rel="preload" href="ids/fonts/geologica-cyrillic.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- Тема: сохранённый выбор, иначе системная настройка. До загрузки стилей, чтобы не мигало -->
+    <script>
+      (function () {
+        var theme = null;
+        try { theme = localStorage.getItem("ids-theme"); } catch (e) {}
+        if (theme === "dark" || (!theme && matchMedia("(prefers-color-scheme: dark)").matches)) {
+          document.documentElement.classList.add("dark");
+        }
+      })();
+    </script>
+
+    <!-- IDS: tokens → settings → reset → page-composition → components -->
     <link rel="stylesheet" href="ids/css/tokens/palette.css" />
     <link rel="stylesheet" href="ids/css/tokens/colors.css" />
     <link rel="stylesheet" href="ids/css/tokens/scales.css" />
@@ -12,72 +34,86 @@
     <link rel="stylesheet" href="ids/css/reset.css" />
     <link rel="stylesheet" href="ids/css/page-composition/layout.css" />
     <link rel="stylesheet" href="ids/css/components/ids.css" />
+    <link rel="stylesheet" href="ids/css/components/theme-toggle.css" />
+    <!-- Сайт -->
+    <link rel="stylesheet" href="css/site.css" />
   </head>
+
   <body class="ids">
-    <header>
-      <div class="ids__wrapper">
-        <p>Денис Сивухин</p>
-        <nav class="ids__promo-link" aria-label="Разделы страницы">
-          <a href="#works">Работы</a>
-          <a href="#about">О себе</a>
-        </nav>
+    <!-- Верхняя строка: разделы слева, контакт/язык/тема справа. Не закреплена -->
+    <div class="ids__wrapper XL site-bar">
+      <nav class="site-bar__group" aria-label="Разделы сайта">
+        <a href="knowledge/">Знания</a>
+        <a href="about/">Обо мне</a>
+      </nav>
+      <div class="site-bar__group">
+        <a href="https://t.me/denisivukhin">Написать</a>
+        <span class="site-bar__lang">
+          <span aria-current="true">Ру</span>
+          <span class="is-soon" title="Английская версия скоро">En</span>
+        </span>
+        <button class="ids__theme-toggle" role="switch" aria-checked="false" aria-label="Тёмная тема">
+          <span class="ids__theme-toggle__track"><span class="ids__theme-toggle__thumb"></span></span>
+        </button>
       </div>
+    </div>
+
+    <!-- Плашка-переключатель: «Денис Сивухин делает [всё ⌄]». Закреплена сверху -->
+    <header class="site-header">
+      <nav class="site-pill" aria-label="Фильтр проектов">
+        <a class="site-pill__name" href="./">Денис Сивухин</a> делает
+        <span class="site-pill__menu">
+          <button type="button" class="site-pill__toggle" aria-expanded="false" aria-controls="site-menu">
+            <span data-current-label>всё</span>
+            <svg class="site-pill__chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.2" /></svg>
+          </button>
+          <ul class="site-pill__list" id="site-menu" hidden>
+            <li><a href="./" data-category="all" aria-current="page">всё</a></li>
+            <li><a href="?category=branding" data-category="branding">брендинг</a></li>
+            <li><a href="?category=web" data-category="web">сайты</a></li>
+            <li><a href="?category=packaging" data-category="packaging">упаковку</a></li>
+            <li><a href="?category=communications" data-category="communications">коммуникации</a></li>
+            <li><a href="?category=presentations" data-category="presentations">презентации</a></li>
+            <li><a href="?category=navigation" data-category="navigation">навигацию</a></li>
+            <li><a href="?category=logos" data-category="logos">логотипы</a></li>
+          </ul>
+        </span>
+      </nav>
     </header>
 
     <main>
-      <div class="ids__wrapper">
-        <div class="ids__space XL"></div>
-        <div class="ids__text-width">
-          <h1>Графический дизайнер</h1>
-          <p class="loud">Навигация, упаковка, брендинг, веб</p>
-        </div>
-
+      <h1 class="visually-hidden">Денис Сивухин — графический дизайнер</h1>
+      <div class="ids__wrapper XL">
         <div class="ids__space L"></div>
 
-        <section id="works">
-          <div class="ids__text-width">
-            <h2>Работы</h2>
-          </div>
-          <div class="ids__sequence XL gap-M">
-            <div class="ids__sequence-item">
-              <article>
-                <figure class="ids__rounded">
-                  <a href="cases/era/era-01.avif">
-                    <img src="cases/era/era-01.avif" alt="Кейс Era" />
-                  </a>
-                  <figcaption>
-                    <h3>Era</h3>
-                  </figcaption>
-                </figure>
-              </article>
-            </div>
-          </div>
-        </section>
+        <!-- Сетка проектов. Пока вручную; потом карточки будут собираться из папок cases/ -->
+        <section id="projects" aria-label="Проекты">
+          <div class="ids__sequence L gap-M">
+            <article class="ids__sequence-item project-card" data-category="branding">
+              <div class="ids__rounded project-card__cover">
+                <img src="media/covers/plitochka.jpg" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Плиточка</h2>
+              <p class="project-card__meta">Брендинг, 2025</p>
+            </article>
 
-        <div class="ids__space L"></div>
+            <article class="ids__sequence-item project-card" data-category="packaging">
+              <div class="ids__rounded project-card__cover">
+                <img src="media/covers/era.avif" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Упаковка для «Эра»</h2>
+              <p class="project-card__meta">Упаковка, 2023</p>
+            </article>
 
-        <section id="about">
-          <div class="ids__text-width">
-            <h2>О себе</h2>
+            <article class="ids__sequence-item project-card" data-category="branding">
+              <div class="ids__rounded project-card__cover">
+                <img src="media/covers/exitdesign.jpg" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Фирменный стиль для «Выход в город»</h2>
+              <p class="project-card__meta">Брендинг, 2025</p>
+            </article>
           </div>
-          <div class="ids__sequence XL gap-M">
-            <div class="ids__sequence-item">
-              <figure class="ids__rounded">
-                <img src="author-photo.jpeg" alt="Денис Сивухин" />
-              </figure>
-            </div>
-            <div class="ids__sequence-item">
-              <p>
-                Я — Денис Сивухин, графический дизайнер, делаю навигацию,
-                упаковку, брендинг, веб.
-              </p>
-              <p>
-                Работал с Студией Артемия Лебедева, НИУ ВШЭ, ВК, МТС, Т1, Лукойл,
-                Озон, Рутуб.
-              </p>
-              <p>За 6 лет сделал 44 проекта. Лучшие из них на сайте.</p>
-            </div>
-          </div>
+          <p class="projects__empty" hidden>В этой категории пока нет проектов.</p>
         </section>
 
         <div class="ids__space XL"></div>
@@ -85,9 +121,16 @@
     </main>
 
     <footer>
-      <div class="ids__wrapper">
-        <p>© Денис Сивухин</p>
+      <div class="ids__wrapper XL site-footer__inner">
+        <p>© 2019–2026 Денис Сивухин</p>
+        <p class="site-footer__links">
+          <a href="https://t.me/denisivukhin">Telegram</a>
+          <a href="mailto:email@example.com">email@example.com</a>
+        </p>
       </div>
     </footer>
+
+    <script src="ids/js/theme-toggle.js"></script>
+    <script src="js/filter.js"></script>
   </body>
 </html>

@@ -1,0 +1,280 @@
+/* Стили сайта поверх IDS.
+   Только семантические токены IDS (--ids__*), без сырых цветов и размеров. */
+
+:root {
+  --site-fade: 0.15s ease;
+  --site-header-padding: calc(var(--ids__density) * 1rem);
+  /* Вертикальные поля плашки — ими же выравниваются пункты верхней строки */
+  --pill-padding-block: 0.5em 0.55em;
+  --pill-tint: color-mix(in srgb, var(--ids__text) 7%, transparent);
+  --pill-chip-padding: 0.45em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+}
+
+/* Подвал: горизонтальные поля даёт .ids__wrapper.XL,
+   чтобы край текста совпадал с сеткой проектов */
+footer {
+  padding-inline: 0;
+}
+
+/* ---------- Верхняя строка: разделы и инструменты ---------- */
+
+/* .ids__wrapper.site-bar — чтобы перебить обнуление полей у .ids__wrapper.XL */
+.ids__wrapper.site-bar {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  z-index: 11;
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  padding-block: var(--site-header-padding);
+  pointer-events: none;
+
+  @media (width < 768px) {
+    position: static;
+    padding-bottom: 0;
+  }
+}
+
+.site-bar__group {
+  display: flex;
+  align-items: baseline;
+  gap: var(--ids__gap-m);
+  white-space: nowrap;
+  pointer-events: auto;
+
+  & > * {
+    padding-block: var(--pill-padding-block);
+  }
+}
+
+.ids .site-bar a {
+  color: var(--ids__text);
+  text-decoration: none;
+
+  &:hover {
+    color: var(--ids__hover);
+  }
+}
+
+.site-bar__lang {
+  display: inline-flex;
+  gap: 0.4em;
+  text-transform: uppercase;
+
+  & .is-soon {
+    opacity: 0.35;
+    cursor: default;
+  }
+}
+
+/* Переключатель темы IDS по умолчанию висит в левом нижнем углу —
+   ставим его в строку */
+.ids__theme-toggle {
+  position: static;
+  align-self: center;
+}
+
+/* ---------- Плашка «Денис Сивухин делает [всё ⌄]» ---------- */
+
+/* IDS задаёт header поля; плашка по центру, закреплена при прокрутке.
+   Сам header пропускает клики, кликабельна только плашка */
+header.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  justify-content: center;
+  padding-inline: 0;
+  pointer-events: none;
+}
+
+.site-pill,
+.ids .site-pill__list {
+  background-color: color-mix(in srgb, var(--ids__surface) 80%, transparent);
+  backdrop-filter: blur(20px) saturate(1.6);
+  box-shadow:
+    inset 0 0 0 var(--ids__border-width-s) var(--pill-tint),
+    0 0.5em 1.5em -0.75em color-mix(in srgb, var(--ids__color-gray-950) 25%, transparent);
+}
+
+.ids .site-pill {
+  position: relative;
+  pointer-events: auto;
+  white-space: nowrap;
+  padding-block: var(--pill-padding-block);
+  padding-inline: 1em 0.55em;
+  border-radius: 0.65em;
+
+  & a {
+    color: inherit;
+    text-decoration: none;
+
+    &:hover {
+      color: var(--ids__hover);
+    }
+  }
+}
+
+.site-pill__name {
+  margin-right: var(--pill-chip-padding);
+}
+
+.site-pill__toggle {
+  appearance: none;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3em;
+  margin: -0.15em 0;
+  padding: 0.15em var(--pill-chip-padding);
+  border: none;
+  border-radius: 0.4em;
+  background: none;
+  font: inherit;
+  line-height: inherit;
+  color: inherit;
+  cursor: pointer;
+  transition: background-color var(--site-fade);
+
+  &:hover,
+  &[aria-expanded="true"] {
+    background-color: var(--pill-tint);
+  }
+}
+
+.site-pill__chevron {
+  width: 0.6em;
+  height: 0.36em;
+  opacity: 0.6;
+  transition: transform var(--site-fade);
+
+  [aria-expanded="true"] > & {
+    transform: rotate(180deg);
+  }
+}
+
+.ids .site-pill__list {
+  position: absolute;
+  top: calc(100% + 0.5em);
+  left: 50%;
+  translate: -50%;
+  z-index: 2;
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.15em;
+  width: max-content;
+  max-width: calc(100vw - 2rem);
+  margin: 0;
+  padding: 0.35em;
+  border-radius: 0.65em;
+  animation: site-fade-in var(--site-fade);
+
+  &[hidden] {
+    display: none;
+  }
+
+  /* Сбрасываем маркеры списков IDS */
+  & li {
+    margin: 0;
+    padding: 0;
+
+    &::before {
+      content: none;
+    }
+  }
+
+  & a {
+    display: block;
+    padding: 0.3em 0.6em;
+    border-radius: 0.4em;
+
+    &:hover {
+      background-color: var(--pill-tint);
+    }
+
+    &[aria-current="page"] {
+      background-color: var(--pill-tint);
+      color: var(--ids__text);
+    }
+  }
+}
+
+@keyframes site-fade-in {
+  from {
+    opacity: 0;
+    translate: -50% -0.3em;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ids .site-pill__list {
+    animation: none;
+  }
+}
+
+/* ---------- Сетка проектов ---------- */
+
+.project-card {
+  /* Единое соотношение обложек в сетке. Меняется здесь одной строкой */
+  --cover-ratio: 4 / 3;
+
+  &[hidden] {
+    display: none;
+  }
+}
+
+.project-card__cover {
+  aspect-ratio: var(--cover-ratio);
+  background-color: var(--ids__surface);
+  margin-bottom: 0.6em;
+
+  & img {
+    height: 100%;
+    object-fit: cover;
+  }
+}
+
+.ids .project-card__title {
+  font-size: 1em;
+  font-weight: 500;
+  margin-bottom: 0.15em;
+}
+
+.ids .project-card__meta {
+  color: var(--ids__text-caption);
+}
+
+.projects__empty {
+  color: var(--ids__text-caption);
+}
+
+/* ---------- Подвал ---------- */
+
+.site-footer__inner {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-between;
+  gap: var(--ids__gap-m);
+  color: var(--ids__text-caption);
+
+  & p {
+    margin: 0;
+  }
+
+  & .site-footer__links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ids__gap-m);
+  }
+}

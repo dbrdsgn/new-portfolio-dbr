@@ -219,7 +219,7 @@
 
   & code {
     font-size: 0.9em;
-    font-family: "Inter";
+    font-family: inherit;
     letter-spacing: 0.02em;
     font-weight: 450;
     padding: 0.1em 0.25em;
