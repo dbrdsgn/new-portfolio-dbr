@@ -1,0 +1,29 @@
+---
+// Карточка проекта в сетке: обложка + название, ведёт на страницу кейса.
+// Astro нарезает обложку на несколько размеров, браузер берёт подходящий экрану.
+import { Image } from 'astro:assets';
+import type { LocalizedProject } from '../lib/projects';
+
+interface Props {
+  project: LocalizedProject;
+  /** Первые карточки видны сразу — грузим без задержки */
+  eager?: boolean;
+}
+
+const { project, eager = false } = Astro.props;
+const { entry } = project;
+---
+
+<a class="ids__sequence-item project-card" href={project.url} data-category={entry.data.category}>
+  <div class="ids__rounded project-card__cover">
+    <Image
+      src={entry.data.cover}
+      alt=""
+      widths={[400, 800, 1200]}
+      sizes="(width < 768px) 50vw, 33vw"
+      format="avif"
+      loading={eager ? 'eager' : 'lazy'}
+    />
+  </div>
+  <h2 class="project-card__title">{project.title}</h2>
+</a>

@@ -1,26 +1,14 @@
-# Исходники картинок и видео не храним в Git: они весят сотни мегабайт.
-# В репозиторий попадают только тексты (project.md, article.md)
-# и оптимизированные файлы для сайта (media/).
+# Исходники Дениса: картинки и видео в полном размере, сотни мегабайт.
+# В Git не храним. Сжатые версии для сайта делает `npm run media`
+# и кладёт в src/content/ — они в Git попадают.
 # Резервная копия исходников — на стороне автора (облако).
-cases/**/*.png
-cases/**/*.jpg
-cases/**/*.jpeg
-cases/**/*.gif
-cases/**/*.mp4
-cases/**/*.mov
-cases/**/*.webm
-cases/**/*.pdf
-cases/**/*.psd
-knowledge/**/*.png
-knowledge/**/*.jpg
-knowledge/**/*.jpeg
-knowledge/**/*.gif
+cases/
+knowledge/
 
-# Проекты под NDA не публикуем
-cases/NDA/
-
-# Node.js
+# Node.js и сборка
 node_modules/
+dist/
+.astro/
 
 # Системные файлы
 .DS_Store

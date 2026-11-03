@@ -1,0 +1,32 @@
+---
+// Главная: сетка проектов. Карточки собираются из src/content/projects/
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { getHomeProjects } from '../lib/projects';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const projects = await getHomeProjects(lang);
+---
+
+<BaseLayout>
+  <h1 class="visually-hidden">{t('site.title')}</h1>
+  <div class="ids__wrapper XL">
+    <div class="ids__space L"></div>
+
+    <section id="projects" aria-label={t('projects.label')}>
+      <div class="ids__sequence L gap-M">
+        {projects.map((project, i) => <ProjectCard project={project} eager={i < 3} />)}
+      </div>
+      <p class="projects__empty" hidden>{t('projects.empty')}</p>
+    </section>
+
+    <div class="ids__space XL"></div>
+  </div>
+</BaseLayout>

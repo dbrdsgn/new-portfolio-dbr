@@ -1,0 +1,72 @@
+---
+// Шапка: разделы слева, плашка-фильтр «Задизайнил [всё ⌄]» по центру, язык справа. Не закреплена.
+// В списке плашки только категории, в которых есть проекты.
+import { categories } from '../data/categories';
+import { languages, type Lang } from '../i18n/ui';
+import { getLangFromUrl, useTranslations, localePath, switchLangPath } from '../i18n/utils';
+import { getHomeProjects } from '../lib/projects';
+
+const lang = getLangFromUrl(Astro.url);
+const t = useTranslations(lang);
+const home = localePath(lang);
+
+const used = new Set((await getHomeProjects(lang)).map((p) => p.entry.data.category));
+const menu = categories.filter((c) => used.has(c.slug));
+
+const sections = [
+  { href: localePath(lang, 'knowledge'), label: t('nav.knowledge') },
+  { href: localePath(lang, 'info'), label: t('nav.info') },
+  { href: localePath(lang, 'projects'), label: t('nav.projects') },
+];
+const langs = Object.keys(languages) as Lang[];
+---
+
+<header class="ids__wrapper XL site-bar">
+  <nav class="site-bar__nav" aria-label={t('nav.label')}>
+    {sections.map((s) => <a href={s.href}>{s.label}</a>)}
+  </nav>
+
+  <div class="site-filter">
+    <nav class="site-pill" aria-label={t('filter.label')} data-choose={t('filter.choose')}>
+      {t('filter.lead')}
+      <span class="site-pill__menu">
+        <button type="button" class="site-pill__toggle" aria-expanded="false" aria-controls="site-menu">
+          <span data-current-label>{t('filter.all')}</span>
+          <svg class="site-pill__chevron" viewBox="0 0 10 6" aria-hidden="true"
+            ><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.2"></path></svg
+          >
+        </button>
+        <ul class="site-pill__list" id="site-menu" hidden>
+          <li><a href={home} data-category="all" aria-current="page">{t('filter.all')}</a></li>
+          {
+            menu.map((c) => (
+              <li>
+                <a href={`${home}?category=${c.slug}`} data-category={c.slug}>
+                  {c.menu[lang]}
+                </a>
+              </li>
+            ))
+          }
+        </ul>
+      </span>
+    </nav>
+  </div>
+
+  <div class="site-lang">
+    {
+      langs.map((l) =>
+        l === lang ? (
+          <span aria-current="true">{l}</span>
+        ) : (
+          <a href={switchLangPath(Astro.url, l)} hreflang={l} lang={l} data-lang-link>
+            {l}
+          </a>
+        ),
+      )
+    }
+  </div>
+</header>
+
+<script>
+  import '../scripts/filter.js';
+</script>
