@@ -1,0 +1,165 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Denis Sivukhin — graphic designer</title>
+    <meta name="description" content="Wayfinding, packaging, branding, web. Portfolio of graphic designer Denis Sivukhin." />
+
+    <!-- Языковые версии страницы — для поисковиков -->
+    <link rel="alternate" hreflang="ru" href="../" />
+    <link rel="alternate" hreflang="en" href="./" />
+
+    <!-- Превью ссылок (Open Graph). Картинка превью добавится, когда будет готова -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Denis Sivukhin" />
+    <meta property="og:title" content="Denis Sivukhin — graphic designer" />
+    <meta property="og:description" content="Wayfinding, packaging, branding, web." />
+    <meta property="og:locale" content="en_US" />
+
+    <link rel="preload" href="../ids/fonts/geologica-latin.woff2" as="font" type="font/woff2" crossorigin />
+
+    <!-- Тема: по системной настройке. До загрузки стилей, чтобы не мигало -->
+    <script>
+      (function () {
+        var root = document.documentElement;
+        var dark = matchMedia("(prefers-color-scheme: dark)");
+        function apply() { root.classList.toggle("dark", dark.matches); }
+        apply();
+        dark.addEventListener("change", apply);
+      })();
+    </script>
+
+    <!-- IDS: tokens → settings → reset → page-composition → components -->
+    <link rel="stylesheet" href="../ids/css/tokens/palette.css" />
+    <link rel="stylesheet" href="../ids/css/tokens/colors.css" />
+    <link rel="stylesheet" href="../ids/css/tokens/scales.css" />
+    <link rel="stylesheet" href="../ids/css/settings.css" />
+    <link rel="stylesheet" href="../ids/css/reset.css" />
+    <link rel="stylesheet" href="../ids/css/page-composition/layout.css" />
+    <link rel="stylesheet" href="../ids/css/components/ids.css" />
+    <!-- Сайт -->
+    <link rel="stylesheet" href="../css/site.css" />
+  </head>
+
+  <body class="ids">
+    <!-- Шапка: разделы слева, плашка-фильтр по центру, язык справа. Не закреплена -->
+    <header class="ids__wrapper XL site-bar">
+      <nav class="site-bar__nav" aria-label="Site sections">
+        <a href="knowledge/">Knowledge</a>
+        <a href="info/">Info</a>
+        <a href="projects/">Projects</a>
+      </nav>
+      <!-- Плашка-фильтр по центру шапки. Список открывается при наведении -->
+      <div class="site-filter">
+        <nav class="site-pill" aria-label="Project filter">
+          Designed
+          <span class="site-pill__menu">
+            <button type="button" class="site-pill__toggle" aria-expanded="false" aria-controls="site-menu">
+              <span data-current-label>everything</span>
+              <svg class="site-pill__chevron" viewBox="0 0 10 6" aria-hidden="true"><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.2" /></svg>
+            </button>
+            <ul class="site-pill__list" id="site-menu" hidden>
+              <li><a href="./" data-category="all" aria-current="page">everything</a></li>
+              <li><a href="?category=branding" data-category="branding">branding</a></li>
+              <li><a href="?category=web" data-category="web">websites</a></li>
+              <li><a href="?category=packaging" data-category="packaging">packaging</a></li>
+              <li><a href="?category=communications" data-category="communications">communications</a></li>
+              <li><a href="?category=presentations" data-category="presentations">presentations</a></li>
+              <li><a href="?category=navigation" data-category="navigation">wayfinding</a></li>
+              <li><a href="?category=logos" data-category="logos">logos</a></li>
+            </ul>
+          </span>
+        </nav>
+      </div>
+      <div class="site-lang">
+        <a href="../" hreflang="ru" lang="ru" data-lang-link>ru</a>
+        <span aria-current="true">en</span>
+      </div>
+    </header>
+
+
+    <main>
+      <h1 class="visually-hidden">Denis Sivukhin — graphic designer</h1>
+      <div class="ids__wrapper XL">
+        <div class="ids__space L"></div>
+
+        <!-- Сетка проектов. Пока вручную; потом карточки будут собираться из папок cases/ -->
+        <section id="projects" aria-label="Projects">
+          <div class="ids__sequence L gap-M">
+            <article class="ids__sequence-item project-card" data-category="branding">
+              <div class="ids__rounded project-card__cover">
+                <img src="../media/covers/exitdesign-hr.jpg" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Identity for Vykhod v Gorod</h2>
+            </article>
+
+            <article class="ids__sequence-item project-card" data-category="web">
+              <div class="ids__rounded project-card__cover">
+                <img src="../media/covers/exitdesign-site.jpg" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Website for Vykhod v Gorod</h2>
+            </article>
+
+            <article class="ids__sequence-item project-card" data-category="branding">
+              <div class="ids__rounded project-card__cover">
+                <img src="../media/covers/exitdesign-pres.jpg" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Presentation style for Vykhod v Gorod</h2>
+            </article>
+
+            <article class="ids__sequence-item project-card" data-category="packaging">
+              <div class="ids__rounded project-card__cover">
+                <img src="../media/covers/era.avif" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Packaging for Era</h2>
+            </article>
+
+            <article class="ids__sequence-item project-card" data-category="logos">
+              <div class="ids__rounded project-card__cover">
+                <img src="../media/covers/als-plitochka.jpg" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Logo for Plitochka store</h2>
+            </article>
+
+            <article class="ids__sequence-item project-card" data-category="branding">
+              <div class="ids__rounded project-card__cover">
+                <img src="../media/covers/als-stroimprosto.jpg" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">StroimProsto identity</h2>
+            </article>
+
+            <article class="ids__sequence-item project-card" data-category="branding">
+              <div class="ids__rounded project-card__cover">
+                <img src="../media/covers/rostelecom.jpg" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Rostelecom conference identity concept</h2>
+            </article>
+
+            <article class="ids__sequence-item project-card" data-category="presentations">
+              <div class="ids__rounded project-card__cover">
+                <img src="../media/covers/hse.jpg" alt="" loading="lazy" />
+              </div>
+              <h2 class="project-card__title">Visual research for HSE University</h2>
+            </article>
+          </div>
+          <p class="projects__empty" hidden>No projects in this category yet.</p>
+        </section>
+
+        <div class="ids__space XL"></div>
+      </div>
+    </main>
+
+    <footer>
+      <div class="ids__wrapper XL site-footer__inner">
+        <p class="site-footer__links">
+          <a href="mailto:sivukhindenis@mail.ru">sivukhindenis@mail.ru</a>
+          <a href="https://t.me/denisivukhin">Telegram</a>
+        </p>
+        <p>© 2019–2026 Denis Sivukhin</p>
+      </div>
+    </footer>
+
+    <script src="../js/filter.js"></script>
+  </body>
+</html>

@@ -35,11 +35,8 @@
   }
   &.XL {
     width: 100%;
-    padding: 0 calc(var(--ids__density) * 0.75rem);
-
-    @media (width < 768px) {
-      padding: 0 calc(var(--ids__density) * 0.6rem);
-    }
+    /* Поля по бокам — как у шапки intuition.team (было 0.75rem) */
+    padding: 0 calc(var(--ids__density) * 0.6rem);
   }
   &.XXL {
     width: 100%;

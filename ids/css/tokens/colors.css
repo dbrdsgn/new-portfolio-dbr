@@ -8,7 +8,7 @@
   --ids__text: var(--ids__color-gray-950);
   --ids__text-caption: var(--ids__color-gray-600);
   --ids__link: var(--ids__color-blue-500);
-  --ids__hover: var(--ids__color-green-500);
+  --ids__hover: var(--ids__color-blue-500);
   --ids__accent: var(--ids__color-red-500);
   --ids__code: var(--ids__color-gray-500);
   --ids__mark: var(--ids__color-yellow-500);
@@ -27,7 +27,7 @@
   --ids__text: var(--ids__color-gray-200);
   --ids__text-caption: var(--ids__color-gray-400);
   --ids__link: var(--ids__color-blue-450);
-  --ids__hover: var(--ids__color-green-450);
+  --ids__hover: var(--ids__color-blue-450);
   --ids__accent: var(--ids__color-red-450);
   --ids__code: var(--ids__color-gray-400);
   --ids__mark: var(--ids__color-yellow-500);

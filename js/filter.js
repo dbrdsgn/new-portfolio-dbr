@@ -42,13 +42,41 @@
         i.removeAttribute("aria-current");
       }
     });
-    toggle.setAttribute("aria-label", label.textContent + ". Выбрать раздел");
+    const choose = document.documentElement.lang === "en" ? "Choose a section" : "Выбрать раздел";
+    toggle.setAttribute("aria-label", label.textContent + ". " + choose);
+    // Переключатель языка ведёт на ту же категорию в другой версии
+    document.querySelectorAll("[data-lang-link]").forEach((link) => {
+      const target = new URL(link.href);
+      if (category === "all") target.searchParams.delete("category");
+      else target.searchParams.set("category", category);
+      link.href = target;
+    });
     if (empty) empty.hidden = visible > 0;
     return category;
   }
 
+  // С мышью список открывается при наведении на «всё» и закрывается,
+  // когда курсор уходит (с короткой задержкой, чтобы успеть дойти до списка).
+  // На телефоне и с клавиатуры — по нажатию.
+  const menu = toggle.parentElement;
+  const canHover = matchMedia("(hover: hover) and (pointer: fine)");
+  let closeTimer;
+
+  menu.addEventListener("mouseenter", () => {
+    if (!canHover.matches) return;
+    clearTimeout(closeTimer);
+    setOpen(true);
+  });
+
+  menu.addEventListener("mouseleave", () => {
+    if (!canHover.matches) return;
+    closeTimer = setTimeout(() => setOpen(false), 250);
+  });
+
   toggle.addEventListener("click", () => {
-    setOpen(toggle.getAttribute("aria-expanded") !== "true");
+    // Мышью список уже открыт наведением — клик его не закрывает
+    if (canHover.matches && toggle.matches(":hover")) setOpen(true);
+    else setOpen(toggle.getAttribute("aria-expanded") !== "true");
   });
 
   document.addEventListener("click", (e) => {
