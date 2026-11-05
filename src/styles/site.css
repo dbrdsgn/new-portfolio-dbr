@@ -72,14 +72,12 @@ footer {
   }
 }
 
-/* Переключатель языка — простым текстом. Выбранный — цветом текста,
-   другой — gray-200; при наведении — синим */
+/* Переключатель языка — одна ссылка на другой язык («En» / «Ru»),
+   gray-200; при наведении — синим */
 .site-lang {
   grid-area: lang;
   justify-self: end;
   display: inline-flex;
-  gap: 0.4em;
-  text-transform: uppercase;
   white-space: nowrap;
 
   & a {
@@ -325,6 +323,22 @@ footer {
 
   & p {
     margin: 0;
+  }
+
+  /* Слева: две строки приглашения, под ними почта и Telegram */
+  & .site-footer__contacts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--ids__gap-s);
+  }
+
+  /* Ссылки серые, как текст подвала; при наведении — синие */
+  .ids & a {
+    color: var(--ids__text-caption);
+
+    &:hover {
+      color: var(--ids__hover);
+    }
   }
 
   & .site-footer__links {

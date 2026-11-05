@@ -10,7 +10,8 @@ export interface LocalizedProject {
   entry: Project;
   translation?: Translation;
   title: string;
-  description?: string;
+  /** Для поисковиков и превью ссылок: начало текста кейса */
+  description: string;
   url: string;
 }
 
@@ -25,31 +26,27 @@ function localize(entry: Project, lang: Lang, tr?: Translation): LocalizedProjec
     entry,
     translation: t,
     title: t?.data.title ?? entry.data.title,
-    description: t?.data.description ?? entry.data.description,
+    description: excerpt((t ?? entry).body ?? ''),
     url: localePath(lang, `projects/${entry.id}`),
   };
 }
 
-/** Порядок: сначала новые (год), внутри года — по полю order, потом по имени папки */
+/** Год для тегов на странице: из даты ГГГГ-ММ */
+export const projectYear = (entry: Project) => entry.data.date.slice(0, 4);
+
+/** Порядок: сначала новые (по дате ГГГГ-ММ), при равной дате — по полю order, потом по имени папки */
 function compare(a: Project, b: Project): number {
   return (
-    b.data.year - a.data.year ||
+    b.data.date.localeCompare(a.data.date) ||
     (a.data.order ?? Infinity) - (b.data.order ?? Infinity) ||
     a.id.localeCompare(b.id)
   );
 }
 
-/** Все видимые проекты по порядку */
+/** Все видимые проекты по порядку. Все они стоят на главной */
 export async function getProjects(lang: Lang): Promise<LocalizedProject[]> {
   const [projects, tr] = await Promise.all([getCollection('projects', (p) => !p.data.hidden), translationsMap()]);
   return projects.sort(compare).map((p) => localize(p, lang, tr.get(`projects/${p.id}`)));
-}
-
-/** Проекты для главной: с флагом featured, а если таких нет — все */
-export async function getHomeProjects(lang: Lang): Promise<LocalizedProject[]> {
-  const all = await getProjects(lang);
-  const featured = all.filter((p) => p.entry.data.featured);
-  return featured.length ? featured : all;
 }
 
 export async function localizeProject(entry: Project, lang: Lang): Promise<LocalizedProject> {
@@ -76,42 +73,104 @@ export async function projectPaths() {
   return projects.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
 }
 
+/* ---------- Текст кейса ---------- */
+
+/** Пометка места текста между картинками в index.md и en.md: <!-- после 7 --> */
+const AFTER = /<!--\s*после\s+(\d+)\s*-->/;
+
+/** Описание для поисковиков: начало текста, до ~160 знаков, по границе предложения */
+function excerpt(markdown: string, limit = 160): string {
+  const intro = markdown.split(AFTER)[0];
+  const text = intro
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1') // ссылки → их текст
+    .replace(/[*_`#>]/g, '')
+    .split(/\n\s*\n/) // абзацы
+    .map((p) => p.replace(/\s+/g, ' ').trim())
+    .filter(Boolean)
+    // Строка-подзаголовок без знака в конце, чтобы не слиплась со следующей
+    .map((p) => (/[.!?…:;]["»]?$/.test(p) ? p : `${p}.`))
+    .join(' ');
+  if (text.length <= limit) return text;
+  const sentences = text.match(/[^.!?…]+[.!?…]+["»]?\s*/g) ?? [];
+  let out = '';
+  for (const s of sentences) {
+    if ((out + s).trim().length > limit) break;
+    out += s;
+  }
+  if (out.trim()) return out.trim();
+  // Первое предложение длиннее предела — режем по слову
+  return text.slice(0, limit).replace(/\s+\S*$/, '') + '…';
+}
+
+/**
+ * Текст кейса, разрезанный пометками <!-- после N -->:
+ * intro — над галереей, after — блоки, которые стоят после картинки номер N
+ */
+export function splitText(project: LocalizedProject): { intro: string; after: Map<number, string> } {
+  const html = (project.translation ?? project.entry).rendered?.html ?? '';
+  const parts = html.split(AFTER);
+  const after = new Map<number, string>();
+  for (let i = 1; i < parts.length; i += 2) after.set(Number(parts[i]), parts[i + 1].trim());
+  return { intro: parts[0].trim(), after };
+}
+
 /* ---------- Галерея кейса ---------- */
 
 // Все картинки и видео из папок кейсов. Astro сам сожмёт картинки и нарежет их под экраны
-const images = import.meta.glob<{ default: ImageMetadata }>('../content/projects/*/*.{avif,jpg,jpeg,png,webp}', {
-  eager: true,
-});
+const images = import.meta.glob<{ default: ImageMetadata }>('../content/projects/*/*.avif', { eager: true });
 const videos = import.meta.glob<string>('../content/projects/*/*.mp4', {
   eager: true,
   query: '?url',
   import: 'default',
 });
 
-export type GalleryItem =
-  | { kind: 'image'; name: string; image: ImageMetadata }
-  | { kind: 'video'; name: string; src: string };
+export const SIZES = ['big', 'half', 'third', 'fourth'] as const;
+export type Size = (typeof SIZES)[number];
 
-/** Файлы с такими именами — только обложка, в галерею кейса не идут */
-const COVER_ONLY = new Set(['preview', 'cover']);
+export type GalleryItem =
+  | { kind: 'image'; number: number; size: Size; name: string; image: ImageMetadata }
+  | { kind: 'video'; number: number; size: Size; name: string; src: string; poster: ImageMetadata };
 
 const fileName = (path: string) => path.split('/').pop()!;
-const baseName = (path: string) => fileName(path).replace(/\.[^.]+$/, '');
 
 /**
- * Галерея кейса = все картинки и видео из его папки, по имени файла
- * (01, 02, 03…). Чтобы поменять порядок — переименовать файлы.
+ * Галерея кейса = все картинки и видео из его папки по номерам.
+ * Имя файла: <адрес>-<номер>-<размер>.avif, видео — .mp4 с постером <адрес>-<номер>-<размер>-poster.avif.
+ * Обложка <адрес>-cover.avif в галерею не входит.
+ * Имя не по правилам или видео без постера — сборка останавливается и называет файл.
  */
 export function getGallery(id: string): GalleryItem[] {
   const prefix = `../content/projects/${id}/`;
+  const name = new RegExp(`^${id}-(\\d+)-(${SIZES.join('|')})(-poster)?\\.(avif|mp4)$`);
+  const parse = (path: string) => {
+    const file = fileName(path);
+    const m = file.match(name);
+    if (!m) throw new Error(`[галерея] ${id}/${file}: имя не по правилам, нужно ${id}-<номер>-<размер>`);
+    return { file, number: Number(m[1]), size: m[2] as Size, poster: Boolean(m[3]) };
+  };
+
   const items: GalleryItem[] = [];
+  const posters = new Map<number, ImageMetadata>();
   for (const [path, mod] of Object.entries(images)) {
-    if (path.startsWith(prefix) && !COVER_ONLY.has(baseName(path))) {
-      items.push({ kind: 'image', name: fileName(path), image: mod.default });
-    }
+    if (!path.startsWith(prefix) || fileName(path) === `${id}-cover.avif`) continue;
+    const f = parse(path);
+    if (f.poster) posters.set(f.number, mod.default);
+    else items.push({ kind: 'image', number: f.number, size: f.size, name: f.file, image: mod.default });
   }
   for (const [path, src] of Object.entries(videos)) {
-    if (path.startsWith(prefix)) items.push({ kind: 'video', name: fileName(path), src });
+    if (!path.startsWith(prefix)) continue;
+    const f = parse(path);
+    const poster = posters.get(f.number);
+    if (!poster) throw new Error(`[галерея] ${id}/${f.file}: у видео нет постера ${id}-${f.number}-${f.size}-poster`);
+    items.push({ kind: 'video', number: f.number, size: f.size, name: f.file, src, poster });
   }
-  return items.sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true }));
+
+  items.sort((a, b) => a.number - b.number);
+  for (let i = 1; i < items.length; i++) {
+    if (items[i].number === items[i - 1].number) {
+      throw new Error(`[галерея] ${id}: номер ${items[i].number} повторяется (${items[i - 1].name}, ${items[i].name})`);
+    }
+  }
+  return items;
 }

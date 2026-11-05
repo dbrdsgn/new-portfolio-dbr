@@ -1,5 +1,5 @@
 /** Тексты интерфейса на двух языках. Тексты кейсов — в src/content/ */
-export const languages = { ru: 'Ру', en: 'En' } as const;
+export const languages = { ru: 'Ru', en: 'En' } as const;
 export type Lang = keyof typeof languages;
 export const defaultLang: Lang = 'ru';
 
@@ -19,6 +19,8 @@ export const ui = {
     'projects.label': 'Проекты',
     'projects.empty': 'В этой категории пока нет проектов.',
     'project.next': 'Следующий проект',
+    'footer.offer': 'Открыт к разовым проектам и долгосрочному сотрудничеству.',
+    'footer.social': 'Хочу участвовать в социальных проектах.',
     'footer.copyright': '© 2019–2026 Денис Сивухин',
   },
   en: {
@@ -36,6 +38,8 @@ export const ui = {
     'projects.label': 'Projects',
     'projects.empty': 'No projects in this category yet.',
     'project.next': 'Next project',
+    'footer.offer': 'Open to one-off projects and long-term collaboration.',
+    'footer.social': 'I want to take part in social projects.',
     'footer.copyright': '© 2019–2026 Denis Sivukhin',
   },
 } as const;

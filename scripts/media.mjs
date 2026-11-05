@@ -3,7 +3,7 @@
 //   cases/<проект>/       → src/content/projects/<проект>/
 //   knowledge/<статья>/   → src/content/articles/<статья>/
 //
-// Картинки (png, jpg, webp, avif) → AVIF шириной до 2400px.
+// Картинки (png, jpg, webp, avif) → AVIF шириной до 2800px, качество 80.
 // GIF и видео (gif, mp4, mov, webm) → MP4 (H.264, до 1920px, без звука).
 // Остальное (pdf, psd, md) пропускается.
 //
@@ -24,7 +24,13 @@ const SOURCES = [
 ];
 const IMAGE = new Set(['.png', '.jpg', '.jpeg', '.webp', '.avif']);
 const VIDEO = new Set(['.gif', '.mp4', '.mov', '.webm']);
-const MAX_IMAGE_WIDTH = 2400;
+/** 2800 — самая большая версия картинки на странице (big во всю ширину) */
+const MAX_IMAGE_WIDTH = 2800;
+/**
+ * Качество AVIF. 4:4:4 — цвет не теряет чёткость на тонких линиях и цветном тексте.
+ * effort 4: выше файл почти не уменьшается, а сжатие идёт в разы дольше.
+ */
+const AVIF = { quality: 80, effort: 4, chromaSubsampling: '4:4:4' };
 const MAX_VIDEO_WIDTH = 1920;
 
 const only = process.argv.slice(2);
@@ -53,7 +59,7 @@ async function image(src, dst) {
   await sharp(src, { animated: false })
     .rotate()
     .resize({ width: MAX_IMAGE_WIDTH, withoutEnlargement: true })
-    .avif({ quality: 62, effort: 5 })
+    .avif(AVIF)
     .toFile(dst);
 }
 

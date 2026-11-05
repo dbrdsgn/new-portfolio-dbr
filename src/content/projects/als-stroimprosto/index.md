@@ -1,9 +1,8 @@
 ---
 title: "Айдентика «СтроимПросто»"
 category: branding
-year: 2023
-cover: ./02.avif
-featured: true
+date: "2023-01"
+cover: ./als-stroimprosto-cover.avif
 ---
 
 Сделано с Эркеном Кагаровым

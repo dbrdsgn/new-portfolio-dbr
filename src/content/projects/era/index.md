@@ -1,9 +1,8 @@
 ---
 title: "Упаковка для «Эра»"
 category: packaging
-year: 2023
-cover: ./era-01.avif
-featured: true
+date: "2023-01"
+cover: ./era-cover.avif
 ---
 
 Сделано за 30 дней в 2023 году

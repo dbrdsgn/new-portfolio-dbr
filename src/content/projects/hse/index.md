@@ -1,9 +1,8 @@
 ---
 title: "Визуальное исследование для НИУ ВШЭ"
 category: presentations
-year: 2020
-cover: ./preview.avif
-featured: true
+date: "2020-01"
+cover: ./hse-cover.avif
 ---
 
 Сделано за 10 дней в 2020 году

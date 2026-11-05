@@ -4,13 +4,13 @@
 import { categories } from '../data/categories';
 import { languages, type Lang } from '../i18n/ui';
 import { getLangFromUrl, useTranslations, localePath, switchLangPath } from '../i18n/utils';
-import { getHomeProjects } from '../lib/projects';
+import { getProjects } from '../lib/projects';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 const home = localePath(lang);
 
-const used = new Set((await getHomeProjects(lang)).map((p) => p.entry.data.category));
+const used = new Set((await getProjects(lang)).map((p) => p.entry.data.category));
 const menu = categories.filter((c) => used.has(c.slug));
 
 const sections = [
@@ -18,7 +18,8 @@ const sections = [
   { href: localePath(lang, 'info'), label: t('nav.info') },
   { href: localePath(lang, 'projects'), label: t('nav.projects') },
 ];
-const langs = Object.keys(languages) as Lang[];
+// Только ссылка на другой язык: на русской версии «En», на английской «Ru»
+const other = (Object.keys(languages) as Lang[]).find((l) => l !== lang)!;
 ---
 
 <header class="ids__wrapper XL site-bar">
@@ -53,17 +54,9 @@ const langs = Object.keys(languages) as Lang[];
   </div>
 
   <div class="site-lang">
-    {
-      langs.map((l) =>
-        l === lang ? (
-          <span aria-current="true">{l}</span>
-        ) : (
-          <a href={switchLangPath(Astro.url, l)} hreflang={l} lang={l} data-lang-link>
-            {l}
-          </a>
-        ),
-      )
-    }
+    <a href={switchLangPath(Astro.url, other)} hreflang={other} lang={other} data-lang-link>
+      {languages[other]}
+    </a>
   </div>
 </header>
 

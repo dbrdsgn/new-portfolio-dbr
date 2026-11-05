@@ -1,13 +1,21 @@
 ---
-// Страница кейса: название, текст, галерея (все картинки и видео из папки кейса), следующий проект.
+// Страница кейса: название, теги, текст, галерея (все картинки и видео из папки кейса), следующий проект.
 // Каркас на стандартных стилях IDS — дизайн страницы кейса ещё предстоит.
+// Правила данных — в «Правила кейса.md» в корне репозитория.
 import type { CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
 import { categoryLabel } from '../data/categories';
-import { localizeProject, getNextProject, renderLocalized, getGallery } from '../lib/projects';
+import {
+  localizeProject,
+  getNextProject,
+  getGallery,
+  splitText,
+  projectYear,
+  type GalleryItem,
+} from '../lib/projects';
 
 interface Props {
   lang: Lang;
@@ -18,43 +26,83 @@ const { lang, entry } = Astro.props;
 const t = useTranslations(lang);
 const project = await localizeProject(entry, lang);
 const next = await getNextProject(entry, lang);
-const { Content } = await renderLocalized(project);
+const { intro, after } = splitText(project);
 const gallery = getGallery(entry.id);
+
+// Галерея режется на части там, где после картинки стоит текст
+const parts: { items: GalleryItem[]; text?: string }[] = [{ items: [] }];
+for (const item of gallery) {
+  parts.at(-1)!.items.push(item);
+  const text = after.get(item.number);
+  if (text) {
+    parts.at(-1)!.text = text;
+    parts.push({ items: [] });
+  }
+}
+for (const n of after.keys()) {
+  if (!gallery.some((item) => item.number === n)) {
+    throw new Error(`[галерея] ${entry.id}: текст стоит после картинки ${n}, а такой картинки нет`);
+  }
+}
+
+/** Качество, с которым Astro нарезает картинки под экраны */
+const QUALITY = 80;
 ---
 
 <BaseLayout title={`${project.title} — ${t('site.name')}`} description={project.description} ogImage={entry.data.cover}>
   <article class="ids__wrapper XL">
     <div class="ids__space L"></div>
     <h1 class="S">{project.title}</h1>
-    <p class="project-meta">{categoryLabel(entry.data.category, lang)}, {entry.data.year}</p>
+    <p class="project-meta">{categoryLabel(entry.data.category, lang)}, {projectYear(entry)}</p>
     <div class="ids__space S"></div>
-    <div class="ids__text-width">
-      <Content />
-    </div>
+    <div class="ids__text-width" set:html={intro} />
     <div class="ids__space M"></div>
 
-    <div class="project-gallery">
-      {
-        gallery.map((item, i) =>
-          item.kind === 'image' ? (
-            <figure>
-              <Image
-                src={item.image}
-                alt=""
-                widths={[800, 1400, 2000, 2400]}
-                sizes="100vw"
-                format="avif"
-                loading={i === 0 ? 'eager' : 'lazy'}
-              />
-            </figure>
-          ) : (
-            <figure>
-              <video src={item.src} autoplay muted loop playsinline preload="metadata" />
-            </figure>
-          ),
-        )
-      }
-    </div>
+    {
+      parts.map((part, p) => (
+        <>
+          {part.items.length > 0 && (
+            <div class="project-gallery">
+              {part.items.map((item) =>
+                item.kind === 'image' ? (
+                  <figure data-size={item.size}>
+                    <Image
+                      src={item.image}
+                      alt=""
+                      widths={[800, 1400, 2000, 2800]}
+                      sizes="100vw"
+                      format="avif"
+                      quality={QUALITY}
+                      loading={p === 0 && item === part.items[0] ? 'eager' : 'lazy'}
+                    />
+                  </figure>
+                ) : (
+                  <figure data-size={item.size}>
+                    <video
+                      src={item.src}
+                      poster={item.poster.src}
+                      width={item.poster.width}
+                      height={item.poster.height}
+                      muted
+                      loop
+                      playsinline
+                      preload="none"
+                    />
+                  </figure>
+                ),
+              )}
+            </div>
+          )}
+          {part.text && (
+            <>
+              <div class="ids__space M" />
+              <div class="ids__text-width" set:html={part.text} />
+              <div class="ids__space M" />
+            </>
+          )}
+        </>
+      ))
+    }
 
     {
       next && (
@@ -70,3 +118,21 @@ const gallery = getGallery(entry.id);
     <div class="ids__space XL"></div>
   </article>
 </BaseLayout>
+
+<script>
+  // Видео играет, только пока его видно на экране; до этого виден постер.
+  // При «уменьшить движение» в системе остаётся постер
+  if (!matchMedia('(prefers-reduced-motion: reduce)').matches) {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const { target, isIntersecting } of entries) {
+          const video = target as HTMLVideoElement;
+          if (isIntersecting) video.play().catch(() => {});
+          else video.pause();
+        }
+      },
+      { threshold: 0.25 },
+    );
+    document.querySelectorAll('.project-gallery video').forEach((video) => observer.observe(video));
+  }
+</script>

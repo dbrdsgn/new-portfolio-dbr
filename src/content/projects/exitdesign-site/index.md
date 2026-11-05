@@ -1,10 +1,9 @@
 ---
 title: "Сайт для «Выход в город»"
 category: web
-year: 2025
+date: "2025-01"
 order: 20
-cover: ./preview.avif
-featured: true
+cover: ./exitdesign-site-cover.avif
 ---
 
 Сделано за 60 дней в 2025 году

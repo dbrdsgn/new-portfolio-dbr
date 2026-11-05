@@ -1,5 +1,6 @@
 ---
-// Подвал: почта и Telegram слева, © справа. Шрифт 0.8em — как подписи в IDS
+// Подвал: слева приглашение к работе и два способа связи (почта, Telegram), © справа.
+// Шрифт 0.8em и серый цвет — как подписи в IDS
 import { getLangFromUrl, useTranslations } from '../i18n/utils';
 
 const t = useTranslations(getLangFromUrl(Astro.url));
@@ -7,10 +8,13 @@ const t = useTranslations(getLangFromUrl(Astro.url));
 
 <footer>
   <div class="ids__wrapper XL site-footer__inner">
-    <p class="site-footer__links">
-      <a href="mailto:sivukhindenis@mail.ru">sivukhindenis@mail.ru</a>
-      <a href="https://t.me/denisivukhin">Telegram</a>
-    </p>
+    <div class="site-footer__contacts">
+      <p>{t('footer.offer')}<br />{t('footer.social')}</p>
+      <p class="site-footer__links">
+        <a href="mailto:sivukhindenis@mail.ru">sivukhindenis@mail.ru</a>
+        <a href="https://t.me/denissivukhin">Telegram</a>
+      </p>
+    </div>
     <p>{t('footer.copyright')}</p>
   </div>
 </footer>

@@ -1,10 +1,9 @@
 ---
 title: "Фирменный стиль для «Выход в город»"
 category: branding
-year: 2025
+date: "2025-01"
 order: 10
-cover: ./preview.avif
-featured: true
+cover: ./exitdesign-hr-cover.avif
 ---
 
 Сделано за 10 дней в 2025 году

@@ -1,10 +1,9 @@
 ---
 title: "Стиль презентаций для «Выход в город»"
 category: branding
-year: 2025
+date: "2025-01"
 order: 30
-cover: ./preview.avif
-featured: true
+cover: ./exitdesign-pres-cover.avif
 ---
 
 Сделано за 2 дня в 2025 году

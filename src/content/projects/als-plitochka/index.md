@@ -1,9 +1,8 @@
 ---
 title: "Логотип магазина «Плиточка»"
 category: logos
-year: 2023
-cover: ./01.avif
-featured: true
+date: "2023-01"
+cover: ./als-plitochka-cover.avif
 ---
 
 Сделано за 12 дней в 2023 году
