@@ -88,6 +88,17 @@ const QUALITY = 80;
                       playsinline
                       preload="none"
                     />
+                    {item.sound && (
+                      <button
+                        type="button"
+                        class="site-pill project-sound"
+                        aria-pressed="false"
+                        data-on={t('project.soundOn')}
+                        data-off={t('project.soundOff')}
+                      >
+                        {t('project.soundOn')}
+                      </button>
+                    )}
                   </figure>
                 ),
               )}
@@ -135,4 +146,15 @@ const QUALITY = 80;
     );
     document.querySelectorAll('.project-gallery video').forEach((video) => observer.observe(video));
   }
+
+  // Кнопка у видео с меткой -sound: звук включается только нажатием, автозапуск со звуком браузеры запрещают
+  document.querySelectorAll<HTMLButtonElement>('.project-sound').forEach((button) => {
+    const video = button.parentElement!.querySelector('video')!;
+    button.addEventListener('click', () => {
+      video.muted = !video.muted;
+      button.textContent = video.muted ? button.dataset.on! : button.dataset.off!;
+      button.setAttribute('aria-pressed', String(!video.muted));
+      if (!video.muted) video.play().catch(() => {});
+    });
+  });
 </script>

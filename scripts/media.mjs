@@ -4,7 +4,8 @@
 //   knowledge/<статья>/   → src/content/articles/<статья>/
 //
 // Картинки (png, jpg, webp, avif) → AVIF шириной до 2800px, качество 80.
-// GIF и видео (gif, mp4, mov, webm) → MP4 (H.264, до 1920px, без звука).
+// GIF и видео (gif, mp4, mov, webm, mkv) → MP4 (H.264, до 1920px, без звука;
+// звук остаётся только у файлов с меткой -sound в конце имени).
 // Остальное (pdf, psd, md) пропускается.
 //
 // Запуск: npm run media            — все папки
@@ -23,7 +24,7 @@ const SOURCES = [
   { from: 'knowledge', to: 'src/content/articles' },
 ];
 const IMAGE = new Set(['.png', '.jpg', '.jpeg', '.webp', '.avif']);
-const VIDEO = new Set(['.gif', '.mp4', '.mov', '.webm']);
+const VIDEO = new Set(['.gif', '.mp4', '.mov', '.webm', '.mkv']);
 /** 2800 — самая большая версия картинки на странице (big во всю ширину) */
 const MAX_IMAGE_WIDTH = 2800;
 /**
@@ -63,13 +64,13 @@ async function image(src, dst) {
     .toFile(dst);
 }
 
-function video(ffmpeg, src, dst) {
+function video(ffmpeg, src, dst, sound) {
   execFileSync(
     ffmpeg,
     [
       '-y', '-loglevel', 'error',
       '-i', src,
-      '-an',
+      ...(sound ? ['-c:a', 'aac', '-b:a', '96k'] : ['-an']),
       '-vf', `scale='min(${MAX_VIDEO_WIDTH},iw)':-2:flags=lanczos,format=yuv420p`,
       '-c:v', 'libx264', '-preset', 'slow', '-crf', '24',
       '-movflags', '+faststart',
@@ -114,7 +115,7 @@ for (const { from, to } of SOURCES) {
           continue;
         }
         fs.mkdirSync(outDir, { recursive: true });
-        video(ffmpeg, src, dst);
+        video(ffmpeg, src, dst, name.endsWith('-sound'));
         console.log(`${label} → ${name}.mp4  ${kb(src)} → ${kb(dst)} КБ`);
         done++;
       }

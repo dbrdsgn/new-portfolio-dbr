@@ -130,24 +130,25 @@ export type Size = (typeof SIZES)[number];
 
 export type GalleryItem =
   | { kind: 'image'; number: number; size: Size; name: string; image: ImageMetadata }
-  | { kind: 'video'; number: number; size: Size; name: string; src: string; poster: ImageMetadata };
+  | { kind: 'video'; number: number; size: Size; name: string; src: string; poster: ImageMetadata; sound: boolean };
 
 const fileName = (path: string) => path.split('/').pop()!;
 
 /**
  * Галерея кейса = все картинки и видео из его папки по номерам.
  * Имя файла: <адрес>-<номер>-<размер>.avif, видео — .mp4 с постером <адрес>-<номер>-<размер>-poster.avif.
+ * Видео со звуком: <адрес>-<номер>-<размер>-sound.mp4, постер без метки.
  * Обложка <адрес>-cover.avif в галерею не входит.
  * Имя не по правилам или видео без постера — сборка останавливается и называет файл.
  */
 export function getGallery(id: string): GalleryItem[] {
   const prefix = `../content/projects/${id}/`;
-  const name = new RegExp(`^${id}-(\\d+)-(${SIZES.join('|')})(-poster)?\\.(avif|mp4)$`);
+  const name = new RegExp(`^${id}-(\\d+)-(${SIZES.join('|')})(-sound)?(-poster)?\\.(avif|mp4)$`);
   const parse = (path: string) => {
     const file = fileName(path);
     const m = file.match(name);
     if (!m) throw new Error(`[галерея] ${id}/${file}: имя не по правилам, нужно ${id}-<номер>-<размер>`);
-    return { file, number: Number(m[1]), size: m[2] as Size, poster: Boolean(m[3]) };
+    return { file, number: Number(m[1]), size: m[2] as Size, sound: Boolean(m[3]), poster: Boolean(m[4]) };
   };
 
   const items: GalleryItem[] = [];
@@ -163,7 +164,7 @@ export function getGallery(id: string): GalleryItem[] {
     const f = parse(path);
     const poster = posters.get(f.number);
     if (!poster) throw new Error(`[галерея] ${id}/${f.file}: у видео нет постера ${id}-${f.number}-${f.size}-poster`);
-    items.push({ kind: 'video', number: f.number, size: f.size, name: f.file, src, poster });
+    items.push({ kind: 'video', number: f.number, size: f.size, name: f.file, src, poster, sound: f.sound });
   }
 
   items.sort((a, b) => a.number - b.number);

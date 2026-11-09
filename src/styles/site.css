@@ -287,6 +287,7 @@ footer {
   gap: var(--ids__gap-m);
 
   & figure {
+    position: relative;
     margin: 0;
   }
 
@@ -296,6 +297,23 @@ footer {
     width: 100%;
     height: auto;
     border-radius: var(--ids__radius-m);
+  }
+}
+
+/* Кнопка звука на видео: та же плашка, что и фильтр в шапке */
+.ids .project-sound {
+  position: absolute;
+  left: var(--ids__gap-m);
+  bottom: var(--ids__gap-m);
+  padding-inline: 1em;
+  appearance: none;
+  border: none;
+  font: inherit;
+  color: var(--ids__text);
+  cursor: pointer;
+
+  &:hover {
+    color: var(--ids__hover);
   }
 }
 
