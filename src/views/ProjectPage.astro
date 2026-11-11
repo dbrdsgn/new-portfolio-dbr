@@ -14,6 +14,8 @@ import {
   getGallery,
   splitText,
   projectYear,
+  checkGallery,
+  SIZES_ATTR,
   type GalleryItem,
 } from '../lib/projects';
 
@@ -45,6 +47,9 @@ for (const n of after.keys()) {
   }
 }
 
+// Нечётные half, разные пропорции в паре, third/fourth — предупреждение при сборке (один раз, на русской странице)
+if (lang === 'ru') for (const w of checkGallery(entry.id, gallery, after.keys())) console.warn(`[сетка] ${w}`);
+
 /** Качество, с которым Astro нарезает картинки под экраны */
 const QUALITY = 80;
 ---
@@ -70,7 +75,7 @@ const QUALITY = 80;
                       src={item.image}
                       alt=""
                       widths={[800, 1400, 2000, 2800]}
-                      sizes="100vw"
+                      sizes={SIZES_ATTR[item.size]}
                       format="avif"
                       quality={QUALITY}
                       loading={p === 0 && item === part.items[0] ? 'eager' : 'lazy'}

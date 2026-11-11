@@ -21,7 +21,7 @@ const projects = await getProjects(lang);
     <div class="ids__space L"></div>
 
     <section id="projects" aria-label={t('projects.label')}>
-      <div class="ids__sequence L gap-M">
+      <div class="ids__sequence L gap-S">
         {projects.map((project, i) => <ProjectCard project={project} eager={i < 3} />)}
       </div>
       <p class="projects__empty" hidden>{t('projects.empty')}</p>

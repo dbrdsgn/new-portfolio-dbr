@@ -175,3 +175,62 @@ export function getGallery(id: string): GalleryItem[] {
   }
   return items;
 }
+
+/* ---------- Сетка картинок кейса ---------- */
+
+/** Какую долю экрана занимает картинка: браузер по ней выбирает файл нужной ширины */
+export const SIZES_ATTR: Record<Size, string> = {
+  big: '100vw',
+  half: '(width < 768px) 100vw, 50vw',
+  third: '100vw',
+  fourth: '100vw',
+};
+
+/** Пропорции картинки или постера видео */
+function ratio(item: GalleryItem) {
+  const img = item.kind === 'image' ? item.image : item.poster;
+  return img.width / img.height;
+}
+
+const pixels = (item: GalleryItem) => {
+  const img = item.kind === 'image' ? item.image : item.poster;
+  return `${item.name} ${img.width}×${img.height}`;
+};
+
+/**
+ * Проверка сетки по «Правилам кейса». Сборку не останавливает: Клод сообщает Денису, тот решает.
+ * - внутри проекта только big и half;
+ * - half идут парами: нечётное количество подряд — неполный ряд;
+ * - у пары half одна пропорция;
+ * - текст [после N] не разрывает пару.
+ */
+export function checkGallery(id: string, items: GalleryItem[], textAfter: Iterable<number>): string[] {
+  const warnings: string[] = [];
+  const pairs: GalleryItem[][] = [];
+  let run: GalleryItem[] = [];
+  const flush = () => {
+    if (run.length % 2) warnings.push(`${id}: нечётное количество half подряд (${run.length}): ${run.map((i) => i.name).join(', ')}`);
+    for (let i = 0; i < run.length; i += 2) pairs.push(run.slice(i, i + 2));
+    run = [];
+  };
+  for (const item of items) {
+    if (item.size === 'third' || item.size === 'fourth') {
+      warnings.push(`${id}: размер ${item.size} внутри проекта не используется: ${item.name}`);
+    }
+    if (item.size === 'half') run.push(item);
+    else flush();
+  }
+  flush();
+
+  for (const pair of pairs) {
+    // Разница больше 1% уже видна как ступенька внизу ряда
+    if (pair.length === 2 && Math.abs(ratio(pair[0]) / ratio(pair[1]) - 1) > 0.01) {
+      warnings.push(`${id}: разные пропорции у пары half: ${pair.map(pixels).join(', ')}`);
+    }
+  }
+  for (const n of textAfter) {
+    const pair = pairs.find((p) => p.length === 2 && p[0].number === n);
+    if (pair) warnings.push(`${id}: текст [после ${n}] разрывает пару half: ${pair.map((i) => i.name).join(', ')}`);
+  }
+  return warnings;
+}

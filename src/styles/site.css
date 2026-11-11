@@ -281,10 +281,26 @@ footer {
   color: var(--ids__text-caption);
 }
 
+/*
+ * Картинки кейса, правила — в «Правила кейса.md»: big во всю ширину, half по две в ряд.
+ * На телефоне все во всю ширину, одна под другой
+ */
 .project-gallery {
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-columns: 1fr;
   gap: var(--ids__gap-m);
+
+  @media (width >= 768px) {
+    grid-template-columns: 1fr 1fr;
+
+    & figure {
+      grid-column: span 2;
+    }
+
+    & figure[data-size='half'] {
+      grid-column: span 1;
+    }
+  }
 
   & figure {
     position: relative;
