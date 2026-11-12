@@ -7,23 +7,10 @@
 // стал настройками сайта, его копируют кнопкой и заменяют им содержимое этого файла.
 // Сид хранится в адресе (?seed=…), поэтому вариант можно отправить ссылкой.
 //
-// Адрес страницы секретный: в коде его нет. На опубликованном сайте он берётся из закрытой
-// настройки репозитория COVER_GENERATOR_PATH (GitHub → Settings → Secrets and variables → Actions),
-// см. .github/workflows/deploy.yml. Пока настройка не задана, страница не публикуется.
-// На своём компьютере (npm run dev) страница открывается по адресу /cover-generator.
-// Ссылок на неё с сайта нет, от поисковиков она закрыта.
+// На страницу нет ссылок с сайта, и она закрыта от поисковиков: попасть можно только по прямому адресу.
 import BaseLayout from '../layouts/BaseLayout.astro';
 import NoteCover from '../components/NoteCover.astro';
 import { coverDefaults, type CoverSettings } from '../lib/cover';
-
-export function getStaticPaths() {
-  const path = (process.env.COVER_GENERATOR_PATH ?? '').trim() || (import.meta.env.DEV ? 'cover-generator' : '');
-  if (!path) return [];
-  if (!/^[a-z0-9-]+$/i.test(path)) {
-    throw new Error('[генератор] COVER_GENERATOR_PATH: в адресе допустимы только латинские буквы, цифры и дефис');
-  }
-  return [{ params: { generator: path } }];
-}
 
 const defaultSeed = 'Название заметки';
 /** Примеры под обложкой: по ним видно, как настройки ведут себя на разных сидах */
