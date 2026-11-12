@@ -2,8 +2,8 @@
 # В Git не храним. Сжатые версии для сайта делает `npm run media`
 # и кладёт в src/content/ — они в Git попадают.
 # Резервная копия исходников — на стороне автора (облако).
-cases/
-knowledge/
+/cases/
+/knowledge/
 
 # Node.js и сборка
 node_modules/

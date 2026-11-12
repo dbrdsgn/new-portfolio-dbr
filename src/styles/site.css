@@ -263,6 +263,13 @@ footer {
     height: 100%;
     object-fit: cover;
   }
+
+  /* Сгенерированная обложка занимает карточку целиком: пропорцию и скругление задаёт карточка */
+  & note-cover {
+    height: 100%;
+    aspect-ratio: auto;
+    border-radius: 0;
+  }
 }
 
 .ids .project-card__title {
@@ -273,6 +280,318 @@ footer {
 
 .projects__empty {
   color: var(--ids__text-caption);
+}
+
+/* ---------- Обложки заметок (генератор — src/lib/cover.ts) ---------- */
+
+/* Полосы приходят в переменной --cover-stops: её пишет компонент NoteCover
+   при сборке и скрипт при наведении */
+note-cover {
+  /* Соотношение сторон обложки. Меняется здесь одной строкой */
+  --cover-ratio: 3 / 4;
+
+  display: block;
+  aspect-ratio: var(--cover-ratio);
+  border-radius: var(--ids__radius-m);
+  background: linear-gradient(var(--cover-stops));
+}
+
+/* В новых браузерах цвета смешиваются в oklab: переходы чище, без грязно-серого */
+@supports (background: linear-gradient(in oklab, red, blue)) {
+  note-cover {
+    background: linear-gradient(in oklab, var(--cover-stops));
+  }
+}
+
+/* Страница /cover-generator: слева обложка, сид, скачивание и примеры; справа настройки.
+   Настройки стоят на месте, пока листаются примеры. На узком экране — в один столбец */
+.cover-generator {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 22rem;
+  align-items: start;
+  gap: var(--ids__gap-l);
+
+  @media (width < 1000px) {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  /* Обложка и рядом с ней поле сида с пояснением и кнопками */
+  & .cover-generator__top {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    gap: var(--ids__gap-l);
+  }
+
+  & .cover-generator__cover {
+    flex: none;
+    width: 20rem;
+    max-width: 100%;
+  }
+
+  & .cover-generator__form {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    gap: var(--ids__gap-s);
+    min-width: 14em;
+  }
+
+  /* Пояснения — мелко и серым, как подписи в подвале */
+  .ids & .cover-generator__hint {
+    margin: 0;
+    font-size: 0.8em;
+    color: var(--ids__text-caption);
+  }
+
+  & input[type='text'],
+  & textarea,
+  & .cover-generator__buttons button {
+    box-sizing: border-box;
+    padding: 0.5em 0.7em;
+    border: none;
+    border-radius: var(--ids__radius-m);
+    background: var(--ids__surface);
+    color: var(--ids__text);
+    font: inherit;
+  }
+
+  & input[type='text'],
+  & textarea {
+    display: block;
+    width: 100%;
+  }
+
+  & input[type='text'] {
+    margin-bottom: var(--ids__gap-s);
+  }
+
+  & .cover-generator__buttons {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--ids__gap-s);
+
+    & button {
+      cursor: pointer;
+
+      &:hover {
+        color: var(--ids__hover);
+      }
+
+      &:disabled {
+        color: var(--ids__text-caption);
+        cursor: default;
+      }
+    }
+  }
+
+  & #cover-downloads {
+    margin-top: var(--ids__gap-m);
+  }
+}
+
+/* Примеры: сетка маленьких обложек с подписью-сидом, нажатие подставляет сид */
+.cover-samples {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8.5rem, 1fr));
+  gap: var(--ids__gap-m) var(--ids__gap-s);
+  margin-top: var(--ids__gap-s);
+
+  & button {
+    appearance: none;
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+    min-width: 0;
+    padding: 0;
+    border: none;
+    background: none;
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+}
+
+/* Настройки генератора: плашка справа со своей прокруткой */
+.cover-settings {
+  position: sticky;
+  top: var(--ids__gap-m);
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: var(--ids__gap-m);
+  max-height: calc(100vh - var(--ids__gap-m) * 2);
+  overflow-y: auto;
+  padding: var(--ids__gap-m);
+  border-radius: var(--ids__radius-m);
+  background: var(--ids__surface);
+  font-size: 0.8em;
+
+  @media (width < 1000px) {
+    position: static;
+    max-height: none;
+  }
+
+  .ids & h2 {
+    margin: 0;
+  }
+
+  /* Внутри плашки пояснения того же размера, что и подписи ползунков */
+  .ids & .cover-generator__hint {
+    font-size: 1em;
+  }
+
+  /* На серой плашке поля и кнопки — цветом страницы */
+  & textarea,
+  & .cover-generator__buttons button {
+    background: var(--ids__background);
+  }
+
+  & fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 0.9em;
+    min-width: 0;
+    margin: var(--ids__gap-s) 0 0;
+    padding: 0;
+    border: none;
+  }
+
+  & legend {
+    padding: 0;
+    margin-bottom: 0.6em;
+    font-size: 1.25em;
+  }
+
+  & summary {
+    color: var(--ids__text-caption);
+    cursor: pointer;
+  }
+
+  & textarea {
+    margin-top: var(--ids__gap-s);
+    resize: vertical;
+  }
+}
+
+/* Строка настройки: подпись, под ней ползунок (или пара «от» и «до») и его значение */
+.cover-knob {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2em;
+}
+
+.cover-knob__row {
+  display: flex;
+  align-items: center;
+  gap: 0.6em;
+
+  & input {
+    flex: 1;
+    min-width: 0;
+    accent-color: var(--ids__text);
+  }
+
+  /* Число не дёргает ползунок, когда меняется количество цифр */
+  & output {
+    flex: none;
+    width: 2.8em;
+    text-align: right;
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+.cover-knob__tag {
+  flex: none;
+  width: 1.4em;
+  color: var(--ids__text-caption);
+}
+
+/* Палитра: три ряда квадратиков по ролям. Крестик на квадратике убирает цвет, плюс в конце ряда добавляет */
+.cover-palette {
+  display: flex;
+  flex-direction: column;
+  gap: 0.7em;
+
+  & .cover-palette__group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3em;
+  }
+
+  & .cover-palette__swatches {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5em;
+  }
+
+  & .cover-swatch {
+    position: relative;
+    display: block;
+  }
+
+  & input[type='color'],
+  & .cover-palette__add {
+    appearance: none;
+    box-sizing: border-box;
+    display: block;
+    width: 2.4em;
+    height: 2.4em;
+    padding: 0;
+    border: var(--ids__border-width-s) solid color-mix(in srgb, var(--ids__text) 15%, transparent);
+    border-radius: var(--ids__radius-m);
+    background: none;
+    cursor: pointer;
+  }
+
+  & input[type='color']::-webkit-color-swatch-wrapper {
+    padding: 0;
+  }
+
+  & input[type='color']::-webkit-color-swatch {
+    border: none;
+    border-radius: var(--ids__radius-s);
+  }
+
+  & input[type='color']::-moz-color-swatch {
+    border: none;
+    border-radius: var(--ids__radius-s);
+  }
+
+  & .cover-palette__add {
+    color: var(--ids__text-caption);
+    font: inherit;
+    line-height: 1;
+
+    &:hover {
+      color: var(--ids__hover);
+    }
+  }
+
+  /* Крестик появляется при наведении на квадратик */
+  & .cover-swatch button {
+    appearance: none;
+    position: absolute;
+    top: -0.45em;
+    right: -0.45em;
+    display: none;
+    place-items: center;
+    width: 1.3em;
+    height: 1.3em;
+    padding: 0;
+    border: none;
+    border-radius: 50%;
+    background: var(--ids__text);
+    color: var(--ids__background);
+    font: inherit;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  & .cover-swatch:hover button:not(:disabled),
+  & .cover-swatch button:focus-visible {
+    display: grid;
+  }
 }
 
 /* ---------- Страница кейса (каркас на стандартных стилях IDS) ---------- */
@@ -341,6 +660,28 @@ footer {
 
   &:hover .project-next__title {
     color: var(--ids__hover);
+  }
+}
+
+/* ---------- Страница статьи (каркас на стандартных стилях IDS) ---------- */
+
+/* Текст уже картинок, как .ids__text-width; картинки с подписями — на всю ширину колонки */
+.article-body {
+  & > :not(figure) {
+    @media (width >= 768px) {
+      width: 85%;
+    }
+  }
+
+  & figure {
+    margin-block: var(--ids__gap-m);
+  }
+
+  & img {
+    display: block;
+    width: 100%;
+    height: auto;
+    border-radius: var(--ids__radius-m);
   }
 }
 

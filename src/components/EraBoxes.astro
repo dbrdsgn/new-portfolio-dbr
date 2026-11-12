@@ -1,0 +1,330 @@
+---
+// Три 3D-коробки «Эра» в ряд, анимация по прокрутке. Проба: в «Правилах кейса» такого блока пока нет.
+//
+// Что происходит:
+// 1. Блок прилипает к экрану. В начале между коробками большой зазор, каждая повёрнута по-своему.
+// 2. По мере прокрутки зазор уменьшается, коробки доворачиваются вокруг вертикальной оси и встают в одну линию.
+// 3. В конце прокрутки боковые коробки сдвигаются вплотную к средней с лёгким отскоком.
+//    При прокрутке назад раздвигаются обратно.
+//
+// Грани вырезаны из развёрток на картинках кейса (era-2, era-3) и лежат в src/assets/era-boxes/.
+// Все числа анимации собраны в начале скрипта внизу файла.
+
+const files = import.meta.glob<{ default: ImageMetadata }>('../assets/era-boxes/*.webp', { eager: true });
+const texture = (variant: string, name: string) => files[`../assets/era-boxes/${variant}-${name}.webp`].default.src;
+
+// Коробки слева направо
+const boxes = ['blue', 'yellow', 'blue'];
+
+// Сторона коробки → грань развёртки
+const sides = [
+  { side: 'front', texture: 'front' }, // название лампы и цветная наклейка
+  { side: 'right', texture: 'c' }, // технические характеристики
+  { side: 'back', texture: 'a' }, // изготовитель и QR-код
+  { side: 'left', texture: 'b' }, // «Будет полезно»
+  { side: 'top', texture: 'top' }, // крышка с цветной наклейкой
+  { side: 'bottom', texture: 'bottom' }, // дно со штрихкодом
+];
+---
+
+<section class="era-boxes" aria-hidden="true">
+  <div class="era-boxes__pin">
+    <div class="era-boxes__scene">
+      <div class="era-boxes__stage">
+        {
+          boxes.map((variant, i) => (
+            // Без скрипта коробки стоят готовым рядом, вплотную
+            <div class="box" style={`--x: ${i - (boxes.length - 1) / 2}; --turn: 0`}>
+              {sides.map((s) => (
+                <div class={`box__face box__face--${s.side}`} data-side={s.side}>
+                  <img src={texture(variant, s.texture)} alt="" decoding="async" />
+                </div>
+              ))}
+            </div>
+          ))
+        }
+      </div>
+    </div>
+  </div>
+</section>
+
+<style>
+  .era-boxes {
+    /* Ширина коробки. Первое число: раздвинутый ряд занимает 90% ширины экрана.
+       Второе не даёт коробкам вылезти за экран по высоте на широких и низких экранах */
+    --w: min(18vw, 32vh);
+    --w: min(18vw, 32svh);
+    /* Высота коробки — по пропорциям развёртки */
+    --l: calc(var(--w) * 2.01);
+
+    /* Высота блока = экран + путь прокрутки, на котором идёт анимация */
+    height: 240vh;
+    height: 240svh;
+  }
+
+  .era-boxes__pin {
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    height: 100svh;
+    display: grid;
+    place-items: center;
+    overflow-x: clip;
+  }
+
+  .era-boxes__scene {
+    width: 0;
+    height: 0;
+    perspective: calc(var(--w) * 12);
+    /* Ближняя левая коробка из-за перспективы крупнее и ниже остальных — сдвиг возвращает ряд в центр экрана */
+    translate: calc(var(--w) * 0.09) calc(var(--w) * -0.12);
+  }
+
+  /* Смотрим на ряд немного сверху и сбоку. Углы должны совпадать с TILT и STAGE_TURN в скрипте */
+  .era-boxes__stage {
+    position: relative;
+    transform-style: preserve-3d;
+    transform: rotateX(-12deg) rotateY(28deg);
+  }
+
+  /* Коробка: --x — место в ряду в ширинах коробки, --turn — поворот вокруг вертикали в градусах */
+  .box {
+    position: absolute;
+    width: var(--w);
+    height: var(--l);
+    left: calc(var(--w) / -2);
+    top: calc(var(--l) / -2);
+    transform-style: preserve-3d;
+    transform: translate3d(calc(var(--x) * var(--w)), 0, 0) rotateY(calc(var(--turn) * 1deg));
+  }
+
+  /* Коробка — белый картон в любой теме, поэтому цвет здесь задан напрямую */
+  .box__face {
+    position: absolute;
+    left: 0;
+    top: 0;
+    width: 100%;
+    height: 100%;
+    background: #fff;
+    backface-visibility: hidden;
+  }
+
+  .box__face img {
+    display: block;
+    width: 100%;
+    height: 100%;
+    max-width: none;
+    border-radius: 0;
+  }
+
+  /* Затенение грани (--shade считает скрипт) и тонкая кромка, чтобы белые грани не сливались с фоном */
+  .box__face::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgb(0 0 0 / var(--shade, 0.03));
+    box-shadow: inset 0 0 0 1px rgb(0 0 0 / 0.07);
+  }
+
+  .box__face--front {
+    transform: translateZ(calc(var(--w) / 2));
+  }
+  .box__face--right {
+    transform: rotateY(90deg) translateZ(calc(var(--w) / 2));
+  }
+  .box__face--back {
+    transform: rotateY(180deg) translateZ(calc(var(--w) / 2));
+  }
+  .box__face--left {
+    transform: rotateY(-90deg) translateZ(calc(var(--w) / 2));
+  }
+  .box__face--top,
+  .box__face--bottom {
+    height: var(--w);
+    top: calc((var(--l) - var(--w)) / 2);
+  }
+  .box__face--top {
+    transform: rotateX(90deg) translateZ(calc(var(--l) / 2));
+  }
+  .box__face--bottom {
+    transform: rotateX(-90deg) translateZ(calc(var(--l) / 2));
+  }
+
+  /* «Уменьшить движение»: без прилипания и прокрутки, просто готовый ряд */
+  @media (prefers-reduced-motion: reduce) {
+    .era-boxes {
+      height: auto;
+    }
+    .era-boxes__pin {
+      position: static;
+      height: calc(var(--l) * 1.5);
+    }
+  }
+</style>
+
+<script>
+  /* ---------- Настройки анимации. Расстояния — в ширинах коробки ---------- */
+
+  /** Зазор между коробками в начале прокрутки */
+  const GAP_START = 1.1;
+  /** Зазор перед тем, как коробки сдвинутся вплотную */
+  const GAP_END = 0.3;
+  /** Поворот коробок в начале, градусы: у левой коробки и прибавка у каждой следующей. К концу все встают ровно */
+  const TURN_FIRST = 15;
+  const TURN_STEP = 20;
+  /** Доля пути прокрутки, на которой коробки сдвигаются; остаток пути ряд стоит на экране */
+  const CLOSE_AT = 0.72;
+  /** На сколько нужно прокрутить назад, чтобы коробки раздвинулись */
+  const OPEN_BACK = 0.08;
+  /** Сила, с которой коробки стягиваются, и сила отскока */
+  const PULL = 14;
+  const BOUNCE = 0.25;
+  /** Плавность: как быстро коробки догоняют прокрутку */
+  const FOLLOW = 12;
+  /** Наклон и разворот сцены, градусы: должны совпадать с rotateX и rotateY у .era-boxes__stage */
+  const TILT = -12;
+  const STAGE_TURN = 28;
+  /** Откуда светит свет: спереди, немного справа и сверху */
+  const LIGHT = normalize([0.25, -0.55, 0.8]);
+  /** Сила затенения граней и затенение боков, когда соседняя коробка близко */
+  const SHADE = 0.2;
+  const CONTACT_SHADE = 0.1;
+
+  /** Куда смотрит каждая грань коробки (x вправо, y вниз, z на зрителя) */
+  const NORMALS: Record<string, [number, number, number]> = {
+    front: [0, 0, 1],
+    back: [0, 0, -1],
+    right: [1, 0, 0],
+    left: [-1, 0, 0],
+    top: [0, -1, 0],
+    bottom: [0, 1, 0],
+  };
+
+  function normalize(v: number[]): [number, number, number] {
+    const len = Math.hypot(v[0], v[1], v[2]);
+    return [v[0] / len, v[1] / len, v[2] / len];
+  }
+  const clamp = (v: number, min = 0, max = 1) => Math.min(max, Math.max(min, v));
+  const rad = (deg: number) => (deg * Math.PI) / 180;
+
+  document.querySelectorAll<HTMLElement>('.era-boxes').forEach((root) => {
+    const pin = root.querySelector<HTMLElement>('.era-boxes__pin')!;
+    const boxes = [...root.querySelectorAll<HTMLElement>('.box')]; // слева направо
+    const faces = boxes.map((box) => [...box.querySelectorAll<HTMLElement>('.box__face')]);
+    const n = boxes.length;
+
+    // Зазоры между соседними коробками и скорость, с которой они закрываются
+    const gaps = new Array<number>(n - 1).fill(0);
+    const speed = new Array<number>(n - 1).fill(0);
+    let scrub = 0; // сглаженный ход прокрутки до сдвига, 0…1
+    let closed = false;
+    let first = true;
+    let last = 0;
+    let raf = 0;
+    let visible = false;
+
+    /** Сколько пути прокрутки пройдено, 0…1 */
+    function progress() {
+      const track = root.offsetHeight - pin.offsetHeight;
+      if (track <= 0) return 1;
+      return clamp(-root.getBoundingClientRect().top / track);
+    }
+
+    function draw() {
+      const sinT = Math.sin(rad(TILT));
+      const cosT = Math.cos(rad(TILT));
+      // Ряд стоит по центру: считаем места коробок от его середины
+      const total = n + gaps.reduce((sum, g) => sum + g, 0);
+      let x = -total / 2 + 0.5;
+      for (let i = 0; i < n; i++) {
+        const turn = -(TURN_FIRST + i * TURN_STEP) * (1 - scrub);
+        boxes[i].style.setProperty('--x', x.toFixed(4));
+        boxes[i].style.setProperty('--turn', turn.toFixed(2));
+
+        // Свет: чем сильнее грань отвёрнута от света, тем она темнее
+        const sinA = Math.sin(rad(STAGE_TURN + turn));
+        const cosA = Math.cos(rad(STAGE_TURN + turn));
+        for (const face of faces[i]) {
+          const side = face.dataset.side!;
+          const [nx, ny, nz] = NORMALS[side];
+          // Поворот коробки вокруг вертикали, затем наклон сцены
+          const x1 = nx * cosA + nz * sinA;
+          const z1 = -nx * sinA + nz * cosA;
+          const y2 = ny * cosT - z1 * sinT;
+          const z2 = ny * sinT + z1 * cosT;
+          if (z2 < -0.2) continue; // грань отвёрнута от зрителя, её не видно
+          const lit = x1 * LIGHT[0] + y2 * LIGHT[1] + z2 * LIGHT[2];
+          let shade = clamp(0.75 - lit) * SHADE;
+          // Бок темнеет, когда соседняя коробка подошла близко
+          if (side === 'left' && i > 0) shade += CONTACT_SHADE * (1 - clamp(gaps[i - 1] / 0.8));
+          if (side === 'right' && i < n - 1) shade += CONTACT_SHADE * (1 - clamp(gaps[i] / 0.8));
+          face.style.setProperty('--shade', shade.toFixed(3));
+        }
+        x += 1 + (gaps[i] ?? 0);
+      }
+    }
+
+    function frame(now: number) {
+      raf = 0;
+      const dt = Math.min((now - last) / 1000, 1 / 30);
+      last = now;
+      const p = progress();
+
+      if (!closed && p >= CLOSE_AT) {
+        closed = true;
+        speed.fill(0);
+      } else if (closed && p < CLOSE_AT - OPEN_BACK) {
+        closed = false;
+      }
+
+      const k = first ? 1 : 1 - Math.exp(-dt * FOLLOW);
+      const target = clamp(p / CLOSE_AT);
+      scrub += (target - scrub) * k;
+      let moving = Math.abs(target - scrub) > 0.0005;
+
+      if (closed) {
+        // Сдвиг: зазор закрывается с ускорением, коробки ударяются и один раз отскакивают
+        for (let i = 0; i < n - 1; i++) {
+          speed[i] -= PULL * dt;
+          gaps[i] += speed[i] * dt;
+          if (gaps[i] <= 0) {
+            gaps[i] = 0;
+            // Слабый удар гасим совсем, иначе коробки дрожали бы без конца
+            speed[i] = speed[i] < -PULL / 15 ? -speed[i] * BOUNCE : 0;
+          }
+          if (gaps[i] > 0.0005 || Math.abs(speed[i]) > 0.01) moving = true;
+        }
+      } else {
+        // До сдвига: зазор следует за прокруткой
+        const to = GAP_START + (GAP_END - GAP_START) * scrub;
+        for (let i = 0; i < n - 1; i++) {
+          gaps[i] += (to - gaps[i]) * k;
+          speed[i] = 0;
+          if (Math.abs(to - gaps[i]) > 0.0005) moving = true;
+        }
+      }
+
+      first = false;
+      draw();
+      if (moving) tick();
+    }
+
+    function tick() {
+      if (!raf && visible) raf = requestAnimationFrame(frame);
+    }
+
+    // «Уменьшить движение»: готовый ряд, без анимации
+    if (matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      scrub = 1;
+      draw();
+      return;
+    }
+
+    new IntersectionObserver(([entry]) => {
+      visible = entry.isIntersecting;
+      tick();
+    }).observe(root);
+    addEventListener('scroll', tick, { passive: true });
+    addEventListener('resize', tick);
+  });
+</script>

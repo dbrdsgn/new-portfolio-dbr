@@ -78,12 +78,16 @@ export async function projectPaths() {
 /** Пометка места текста между картинками в index.md и en.md: <!-- после 7 --> */
 const AFTER = /<!--\s*после\s+(\d+)\s*-->/;
 
-/** Описание для поисковиков: начало текста, до ~160 знаков, по границе предложения */
-function excerpt(markdown: string, limit = 160): string {
+/**
+ * Описание для поисковиков и превью ссылок: начало текста, до ~160 знаков, по границе предложения.
+ * Если по границе предложения выходит слишком коротко (следующее предложение длинное) — режем по слову
+ */
+function excerpt(markdown: string, limit = 160, min = 80): string {
   const intro = markdown.split(AFTER)[0];
   const text = intro
     .replace(/<!--[\s\S]*?-->/g, ' ')
     .replace(/!?\[([^\]]*)\]\([^)]*\)/g, '$1') // ссылки → их текст
+    .replace(/https?:\/\/\S+/g, '') // голые адреса в описании не нужны
     .replace(/[*_`#>]/g, '')
     .split(/\n\s*\n/) // абзацы
     .map((p) => p.replace(/\s+/g, ' ').trim())
@@ -98,9 +102,9 @@ function excerpt(markdown: string, limit = 160): string {
     if ((out + s).trim().length > limit) break;
     out += s;
   }
-  if (out.trim()) return out.trim();
-  // Первое предложение длиннее предела — режем по слову
-  return text.slice(0, limit).replace(/\s+\S*$/, '') + '…';
+  if (out.trim().length >= min) return out.trim();
+  // Целые предложения дают слишком короткое описание — режем по слову
+  return text.slice(0, limit).replace(/\s+\S*$/, '').replace(/[.,:;—–-]+$/, '') + '…';
 }
 
 /**

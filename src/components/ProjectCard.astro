@@ -3,6 +3,7 @@
 // Astro нарезает обложку на несколько размеров, браузер берёт подходящий экрану.
 import { Image } from 'astro:assets';
 import type { LocalizedProject } from '../lib/projects';
+import NoteCover from './NoteCover.astro';
 
 interface Props {
   project: LocalizedProject;
@@ -12,19 +13,31 @@ interface Props {
 
 const { project, eager = false } = Astro.props;
 const { entry } = project;
+
+// ВРЕМЕННО, проба: у этих кейсов вместо картинки — сгенерированная обложка.
+// Сид — русское название кейса, поэтому обложка одинаковая на обоих языках.
+// Чтобы вернуть картинку, достаточно убрать адрес кейса из списка
+const GENERATED_COVER_DEMO = ['btc'];
+const generated = GENERATED_COVER_DEMO.includes(entry.id);
 ---
 
 <a class="ids__sequence-item project-card" href={project.url} data-category={entry.data.category}>
   <div class="ids__rounded project-card__cover">
-    <Image
-      src={entry.data.cover}
-      alt=""
-      widths={[400, 800, 1200]}
-      sizes="(width < 768px) 50vw, 33vw"
-      format="avif"
-      quality={80}
-      loading={eager ? 'eager' : 'lazy'}
-    />
+    {
+      generated ? (
+        <NoteCover seed={entry.data.title} />
+      ) : (
+        <Image
+          src={entry.data.cover}
+          alt=""
+          widths={[400, 800, 1200]}
+          sizes="(width < 768px) 50vw, 33vw"
+          format="avif"
+          quality={80}
+          loading={eager ? 'eager' : 'lazy'}
+        />
+      )
+    }
   </div>
   <h2 class="project-card__title">{project.title}</h2>
 </a>

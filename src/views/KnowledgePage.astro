@@ -1,0 +1,31 @@
+---
+// «Знания»: сетка статей, как сетка проектов на главной. Карточки собираются из src/content/articles/
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ArticleCard from '../components/ArticleCard.astro';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { getArticles } from '../lib/articles';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const articles = await getArticles(lang);
+---
+
+<BaseLayout title={`${t('nav.knowledge')} — ${t('site.name')}`} ogTitle={t('nav.knowledge')}>
+  <h1 class="visually-hidden">{t('nav.knowledge')}</h1>
+  <div class="ids__wrapper XL">
+    <div class="ids__space L"></div>
+
+    <section aria-label={t('nav.knowledge')}>
+      <div class="ids__sequence L gap-S">
+        {articles.map((article) => <ArticleCard article={article} />)}
+      </div>
+    </section>
+
+    <div class="ids__space XL"></div>
+  </div>
+</BaseLayout>

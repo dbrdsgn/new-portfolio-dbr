@@ -20,13 +20,17 @@ import { getLangFromUrl, useTranslations, switchLangPath } from '../i18n/utils';
 interface Props {
   title?: string;
   description?: string;
-  /** Картинка для превью ссылки (Open Graph); у кейса — обложка */
+  /** Заголовок в превью ссылки (Open Graph); у кейса — название без имени сайта. Без него берётся title */
+  ogTitle?: string;
+  /** Картинка для превью ссылки (Open Graph); у кейса — первая картинка */
   ogImage?: ImageMetadata;
+  /** Служебная страница: не показывать в поисковиках */
+  noindex?: boolean;
 }
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const { title = t('site.title'), description = t('site.description'), ogImage } = Astro.props;
+const { title = t('site.title'), description = t('site.description'), ogTitle = title, ogImage, noindex = false } = Astro.props;
 
 // Предпросмотр на GitHub Pages не должен попадать в поисковики вместо боевого домена
 const isPreview = import.meta.env.PUBLIC_PREVIEW === 'true';
@@ -46,7 +50,7 @@ const alternateEn = new URL(switchLangPath(Astro.url, 'en'), Astro.site);
     <meta name="viewport" content="width=device-width, initial-scale=1" />
     <title>{title}</title>
     <meta name="description" content={description} />
-    {isPreview && <meta name="robots" content="noindex, nofollow" />}
+    {(isPreview || noindex) && <meta name="robots" content="noindex, nofollow" />}
 
     <!-- Языковые версии страницы — для поисковиков -->
     <link rel="canonical" href={canonical} />
@@ -57,11 +61,19 @@ const alternateEn = new URL(switchLangPath(Astro.url, 'en'), Astro.site);
     <!-- Превью ссылок (Open Graph) -->
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={t('site.name')} />
-    <meta property="og:title" content={title} />
+    <meta property="og:title" content={ogTitle} />
     <meta property="og:description" content={description} />
     <meta property="og:url" content={canonical} />
     <meta property="og:locale" content={lang === 'ru' ? 'ru_RU' : 'en_US'} />
-    {ogUrl && <meta property="og:image" content={ogUrl} />}
+    {
+      og && (
+        <>
+          <meta property="og:image" content={ogUrl} />
+          <meta property="og:image:width" content={og.attributes.width} />
+          <meta property="og:image:height" content={og.attributes.height} />
+        </>
+      )
+    }
     <meta name="twitter:card" content={ogUrl ? 'summary_large_image' : 'summary'} />
 
     <link rel="preload" href={lang === 'ru' ? cyrillicFont : latinFont} as="font" type="font/woff2" crossorigin />

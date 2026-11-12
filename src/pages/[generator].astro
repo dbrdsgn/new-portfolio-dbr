@@ -1,0 +1,428 @@
+---
+// Служебная страница: подбор обложки по сиду, скачивание её файлом и настройка самого генератора.
+// Слева обложка, поле сида, кнопки скачивания и примеры; справа настройки.
+//
+// Настройки на этой странице — черновик: они действуют только здесь и запоминаются
+// в браузере. Настройки сайта лежат в src/data/cover-settings.json; чтобы черновик
+// стал настройками сайта, его копируют кнопкой и заменяют им содержимое этого файла.
+// Сид хранится в адресе (?seed=…), поэтому вариант можно отправить ссылкой.
+//
+// Адрес страницы секретный: в коде его нет. На опубликованном сайте он берётся из закрытой
+// настройки репозитория COVER_GENERATOR_PATH (GitHub → Settings → Secrets and variables → Actions),
+// см. .github/workflows/deploy.yml. Пока настройка не задана, страница не публикуется.
+// На своём компьютере (npm run dev) страница открывается по адресу /cover-generator.
+// Ссылок на неё с сайта нет, от поисковиков она закрыта.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import NoteCover from '../components/NoteCover.astro';
+import { coverDefaults, type CoverSettings } from '../lib/cover';
+
+export function getStaticPaths() {
+  const path = (process.env.COVER_GENERATOR_PATH ?? '').trim() || (import.meta.env.DEV ? 'cover-generator' : '');
+  if (!path) return [];
+  if (!/^[a-z0-9-]+$/i.test(path)) {
+    throw new Error('[генератор] COVER_GENERATOR_PATH: в адресе допустимы только латинские буквы, цифры и дефис');
+  }
+  return [{ params: { generator: path } }];
+}
+
+const defaultSeed = 'Название заметки';
+/** Примеры под обложкой: по ним видно, как настройки ведут себя на разных сидах */
+const samples = Array.from({ length: 12 }, (_, i) => String(i + 1));
+
+type NumberKey = Exclude<keyof CoverSettings, 'palette'>;
+
+interface Row {
+  label: string;
+  /** Один ползунок или пара «от — до» */
+  keys: [NumberKey] | [NumberKey, NumberKey];
+  min: number;
+  max: number;
+  step: number;
+}
+
+const groups: { title: string; palette?: boolean; rows: Row[] }[] = [
+  {
+    title: 'Цвета',
+    palette: true,
+    rows: [
+      { label: 'Акцентов в одной обложке', keys: ['accentsMin', 'accentsMax'], min: 1, max: 10, step: 1 },
+      { label: 'Как часто идёт тёмный фон', keys: ['baseWeight'], min: 0, max: 6, step: 0.1 },
+    ],
+  },
+  {
+    title: 'Полосы',
+    rows: [
+      { label: 'Количество полос', keys: ['bandsMin', 'bandsMax'], min: 2, max: 40, step: 1 },
+      { label: 'Высота полосы, в условных единицах', keys: ['widthMin', 'widthMax'], min: 0.1, max: 20, step: 0.1 },
+      { label: 'Перекос в узкие: больше — реже широкие', keys: ['widthCurve'], min: 0.5, max: 6, step: 0.1 },
+      { label: 'Тёмные полосы выше, раз', keys: ['darkScale'], min: 0.2, max: 6, step: 0.1 },
+      { label: 'Блики выше, раз', keys: ['lightScale'], min: 0.1, max: 3, step: 0.1 },
+    ],
+  },
+  {
+    title: 'Градиенты между полосами',
+    rows: [
+      { label: 'Высота градиента, в условных единицах', keys: ['blendMin', 'blendMax'], min: 0, max: 30, step: 0.5 },
+      { label: 'Перекос в короткие: больше — реже длинные', keys: ['blendCurve'], min: 0.5, max: 4, step: 0.1 },
+      { label: 'Доля резких границ', keys: ['hardEdgeChance'], min: 0, max: 1, step: 0.025 },
+    ],
+  },
+  {
+    title: 'Движение при наведении',
+    rows: [
+      { label: 'Сила общих волн', keys: ['flowSwing'], min: 0, max: 2, step: 0.05 },
+      { label: 'Своё «дыхание» каждой полосы', keys: ['ownSwing'], min: 0, max: 1, step: 0.05 },
+      { label: 'Насколько сильно меняются цвета', keys: ['colorShift'], min: 0, max: 1, step: 0.05 },
+      { label: 'Скорость', keys: ['speed'], min: 0.2, max: 3, step: 0.1 },
+      { label: 'Разгон, секунд', keys: ['wakeTime'], min: 0.05, max: 2, step: 0.05 },
+      { label: 'Возврат на место, секунд', keys: ['returnTime'], min: 0.05, max: 2, step: 0.05 },
+    ],
+  },
+];
+---
+
+<BaseLayout title="Генератор обложек" noindex>
+  <div class="ids__wrapper XL">
+    <div class="ids__space L"></div>
+
+    <div class="cover-generator">
+      <div class="cover-generator__main">
+        <h1 class="S">Генератор обложек</h1>
+        <div class="ids__space S"></div>
+
+        <div class="cover-generator__top">
+          <NoteCover seed={defaultSeed} class="cover-generator__cover" />
+
+          <div class="cover-generator__form">
+            <label class="cover-generator__hint" for="cover-seed">Сид</label>
+            <input type="text" id="cover-seed" value={defaultSeed} autocomplete="off" spellcheck="false" />
+            <p class="cover-generator__hint">
+              По умолчанию сид заметки — её название. Чтобы закрепить за заметкой другой вариант, добавьте в её
+              index.md строку:
+            </p>
+            <p class="cover-generator__hint">
+              <code id="cover-seed-line">coverSeed: {JSON.stringify(defaultSeed)}</code>
+            </p>
+
+            <div class="cover-generator__buttons" id="cover-downloads">
+              <button type="button" data-download="image">Скачать картинку</button>
+              <button type="button" data-download="video">Скачать видео</button>
+              <button type="button" data-download="gif">Скачать GIF</button>
+            </div>
+            <p class="cover-generator__hint" id="cover-download-status" role="status"></p>
+          </div>
+        </div>
+
+        <div class="ids__space M"></div>
+        <p class="cover-generator__hint">Примеры. Нажмите на обложку, чтобы взять её сид</p>
+        <div class="cover-samples">
+          {
+            samples.map((seed) => (
+              <button type="button" data-sample={seed}>
+                <NoteCover seed={seed} />
+                <span class="cover-generator__hint">{seed}</span>
+              </button>
+            ))
+          }
+        </div>
+      </div>
+
+      <form class="cover-settings" id="cover-settings">
+        <h2 class="XS">Настройки</h2>
+        <p class="cover-generator__hint">
+          Настройки меняют только эту страницу и запоминаются в этом браузере. Чтобы применить их ко всему сайту,
+          скопируйте их и вставьте в файл src/data/cover-settings.json вместо его содержимого.
+        </p>
+        <div class="cover-generator__buttons">
+          <button type="button" id="cover-copy" data-done="Скопировано">Скопировать настройки</button>
+          <button type="button" id="cover-reset">Сбросить</button>
+        </div>
+        <details>
+          <summary>Показать текстом</summary>
+          <textarea id="cover-json" readonly rows="12" spellcheck="false"></textarea>
+        </details>
+
+        {
+          groups.map((group) => (
+            <fieldset>
+              <legend>{group.title}</legend>
+              {group.palette && <div class="cover-palette" id="cover-palette" />}
+              {group.rows.map((row) => (
+                <div class="cover-knob">
+                  <span>{row.label}</span>
+                  {row.keys.map((key, i) => (
+                    <label class="cover-knob__row">
+                      {row.keys.length === 2 && <span class="cover-knob__tag">{i === 0 ? 'от' : 'до'}</span>}
+                      <input
+                        type="range"
+                        data-key={key}
+                        min={row.min}
+                        max={row.max}
+                        step={row.step}
+                        value={coverDefaults[key]}
+                        aria-label={row.keys.length === 2 ? `${row.label}, ${i === 0 ? 'от' : 'до'}` : row.label}
+                      />
+                      <output data-for={key}>{coverDefaults[key]}</output>
+                    </label>
+                  ))}
+                </div>
+              ))}
+            </fieldset>
+          ))
+        }
+      </form>
+    </div>
+
+    <div class="ids__space XL"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  // Импорт обложки стоит первым: к моменту работы этого скрипта <note-cover> уже умеет принимать настройки
+  import { NoteCover } from '../scripts/note-cover.ts';
+  import { coverDefaults, createCover, normalizeSettings, type CoverRole, type CoverSettings } from '../lib/cover';
+  import { download, exportGif, exportImage, exportVideo } from '../scripts/cover-export.ts';
+
+  type NumberKey = Exclude<keyof CoverSettings, 'palette'>;
+
+  const STORAGE_KEY = 'cover-generator-settings';
+  const ROLES: { role: CoverRole; label: string }[] = [
+    { role: 'dark', label: 'Тёмный фон' },
+    { role: 'color', label: 'Цветные полосы' },
+    { role: 'light', label: 'Блики' },
+  ];
+
+  const input = document.querySelector<HTMLInputElement>('#cover-seed')!;
+  const line = document.querySelector('#cover-seed-line')!;
+  const main = document.querySelector<NoteCover>('.cover-generator__cover')!;
+  const covers = document.querySelectorAll<NoteCover>('.cover-generator note-cover');
+  const sliders = document.querySelectorAll<HTMLInputElement>('#cover-settings input[type="range"]');
+  const paletteBox = document.querySelector('#cover-palette')!;
+  const json = document.querySelector<HTMLTextAreaElement>('#cover-json')!;
+  const copy = document.querySelector<HTMLButtonElement>('#cover-copy')!;
+
+  /* ---------- Сид ---------- */
+
+  function showSeed(seed: string) {
+    main.setAttribute('seed', seed);
+    // Кавычки и обратные косые в сиде экранируются, чтобы строку можно было вставить как есть
+    line.textContent = `coverSeed: ${JSON.stringify(seed)}`;
+  }
+
+  const fromUrl = new URLSearchParams(location.search).get('seed');
+  if (fromUrl !== null) {
+    input.value = fromUrl;
+    showSeed(fromUrl);
+  }
+
+  input.addEventListener('input', () => {
+    showSeed(input.value);
+    const url = new URL(location.href);
+    url.searchParams.set('seed', input.value);
+    history.replaceState(null, '', url);
+  });
+
+  // Нажатие на пример подставляет его сид в поле
+  document.querySelectorAll<HTMLButtonElement>('[data-sample]').forEach((button) => {
+    button.addEventListener('click', () => {
+      input.value = button.dataset.sample!;
+      input.dispatchEvent(new Event('input'));
+      window.scrollTo({ top: 0, behavior: 'smooth' });
+    });
+  });
+
+  /* ---------- Настройки ---------- */
+
+  // Черновик настроек из браузера; чего в нём нет или что испорчено — берётся из настроек сайта
+  function load(): CoverSettings {
+    try {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) return normalizeSettings(JSON.parse(saved));
+    } catch {
+      // Хранилище недоступно (например, приватное окно) — работаем с настройками сайта
+    }
+    return normalizeSettings(coverDefaults);
+  }
+
+  let settings = load();
+
+  const format = (value: number) => value.toLocaleString('ru-RU', { maximumFractionDigits: 3 });
+
+  /** Перерисовать все обложки, обновить текст настроек и запомнить черновик */
+  function update() {
+    for (const cover of covers) cover.settings = normalizeSettings(settings);
+    const text = JSON.stringify(settings, null, 2);
+    json.value = text;
+    try {
+      localStorage.setItem(STORAGE_KEY, text);
+    } catch {
+      // Не запомнилось — не страшно, настройки всё равно видны текстом
+    }
+  }
+
+  function syncSliders() {
+    for (const slider of sliders) {
+      const key = slider.dataset.key as NumberKey;
+      slider.value = String(settings[key]);
+      document.querySelector(`output[data-for="${key}"]`)!.textContent = format(settings[key]);
+    }
+  }
+
+  for (const slider of sliders) {
+    slider.addEventListener('input', () => {
+      const key = slider.dataset.key as NumberKey;
+      settings[key] = Number(slider.value);
+      // В паре «от — до» ползунки не обгоняют друг друга
+      const pair = (key.endsWith('Min') ? key.replace(/Min$/, 'Max') : key.replace(/Max$/, 'Min')) as NumberKey;
+      if (pair !== key && pair in settings) {
+        const crossed = key.endsWith('Min') ? settings[key] > settings[pair] : settings[key] < settings[pair];
+        if (crossed) settings[pair] = settings[key];
+      }
+      syncSliders();
+      update();
+    });
+  }
+
+  /* ---------- Палитра: три ряда квадратиков по ролям ---------- */
+
+  function renderPalette() {
+    paletteBox.replaceChildren(
+      ...ROLES.map(({ role, label }) => {
+        const group = document.createElement('div');
+        group.className = 'cover-palette__group';
+
+        const title = document.createElement('span');
+        title.textContent = label;
+
+        const swatches = document.createElement('div');
+        swatches.className = 'cover-palette__swatches';
+
+        for (const color of settings.palette.filter((c) => c.role === role)) {
+          const swatch = document.createElement('span');
+          swatch.className = 'cover-swatch';
+
+          const picker = document.createElement('input');
+          picker.type = 'color';
+          picker.value = color.hex;
+          picker.setAttribute('aria-label', `${label}: ${color.hex}`);
+          picker.addEventListener('input', () => {
+            color.hex = picker.value;
+            update();
+          });
+
+          const remove = document.createElement('button');
+          remove.type = 'button';
+          remove.textContent = '×';
+          remove.setAttribute('aria-label', `Убрать цвет ${color.hex}`);
+          // Меньше двух цветов обложке не из чего собрать полосы
+          remove.disabled = settings.palette.length <= 2;
+          remove.addEventListener('click', () => {
+            settings.palette.splice(settings.palette.indexOf(color), 1);
+            renderPalette();
+            update();
+          });
+
+          swatch.append(picker, remove);
+          swatches.append(swatch);
+        }
+
+        const add = document.createElement('button');
+        add.type = 'button';
+        add.className = 'cover-palette__add';
+        add.textContent = '+';
+        add.setAttribute('aria-label', `Добавить цвет: ${label.toLowerCase()}`);
+        add.addEventListener('click', () => {
+          // Новый цвет встаёт в конец своего ряда: порядок цветов в палитре влияет на обложки
+          const last = settings.palette.findLastIndex((c) => c.role === role);
+          const color = { hex: '#808080', role };
+          settings.palette.splice(last < 0 ? settings.palette.length : last + 1, 0, color);
+          renderPalette();
+          update();
+        });
+        swatches.append(add);
+
+        group.append(title, swatches);
+        return group;
+      }),
+    );
+  }
+
+  /* ---------- Кнопки настроек ---------- */
+
+  copy.addEventListener('click', async () => {
+    const label = copy.textContent;
+    try {
+      await navigator.clipboard.writeText(json.value);
+      copy.textContent = copy.dataset.done!;
+      setTimeout(() => (copy.textContent = label), 1500);
+    } catch {
+      // Браузер не дал доступ к буферу — открываем текст настроек и выделяем его
+      json.closest('details')!.open = true;
+      json.select();
+    }
+  });
+
+  document.querySelector('#cover-reset')!.addEventListener('click', () => {
+    settings = normalizeSettings(coverDefaults);
+    syncSliders();
+    renderPalette();
+    update();
+    try {
+      localStorage.removeItem(STORAGE_KEY);
+    } catch {
+      // Хранилище недоступно — сбрасывать нечего
+    }
+  });
+
+  /* ---------- Скачивание ---------- */
+
+  const downloads = document.querySelectorAll<HTMLButtonElement>('[data-download]');
+  const status = document.querySelector('#cover-download-status')!;
+
+  /** Имя файла из сида: буквы и цифры остаются, всё остальное — дефисы */
+  function fileName(seed: string) {
+    const slug = seed
+      .trim()
+      .toLowerCase()
+      .replace(/[^\p{L}\p{N}]+/gu, '-')
+      .replace(/^-+|-+$/g, '')
+      .slice(0, 40);
+    return `cover-${slug || 'cover'}`;
+  }
+
+  for (const button of downloads) {
+    button.addEventListener('click', async () => {
+      const kind = button.dataset.download!;
+      const label = button.textContent;
+      const seed = input.value;
+      // Скачивается то, что на экране: текущий сид с текущими настройками и пропорцией обложки
+      const cover = createCover(seed, normalizeSettings(settings));
+      const box = main.getBoundingClientRect();
+      const ratio = box.width / box.height;
+      const progress = (done: number) => (button.textContent = `Готовлю… ${Math.round(done * 100)}%`);
+
+      downloads.forEach((b) => (b.disabled = true));
+      status.textContent =
+        kind === 'video' ? 'Видео записывается в настоящем времени, около 8 секунд. Не закрывайте вкладку.' : '';
+      try {
+        const file =
+          kind === 'image'
+            ? await exportImage(cover, ratio)
+            : kind === 'video'
+              ? await exportVideo(cover, ratio, progress)
+              : await exportGif(cover, ratio, progress);
+        download(file.blob, `${fileName(seed)}.${file.extension}`);
+        status.textContent = '';
+      } catch (error) {
+        status.textContent = `Не получилось: ${error instanceof Error ? error.message : error}`;
+      } finally {
+        button.textContent = label;
+        downloads.forEach((b) => (b.disabled = false));
+      }
+    });
+  }
+
+  syncSliders();
+  renderPalette();
+  update();
+</script>

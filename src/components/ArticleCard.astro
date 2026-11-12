@@ -1,0 +1,19 @@
+---
+// Карточка статьи на странице «Знания»: сгенерированная обложка + название.
+// Вёрстка и стили те же, что у карточки проекта на главной.
+import NoteCover from './NoteCover.astro';
+import { articleCoverSeed, type LocalizedArticle } from '../lib/articles';
+
+interface Props {
+  article: LocalizedArticle;
+}
+
+const { article } = Astro.props;
+---
+
+<a class="ids__sequence-item project-card" href={article.url}>
+  <div class="ids__rounded project-card__cover">
+    <NoteCover seed={articleCoverSeed(article.entry)} />
+  </div>
+  <h2 class="project-card__title">{article.title}</h2>
+</a>

@@ -9,7 +9,9 @@ const label = document.querySelector("[data-current-label]");
 
 if (toggle && list && label) {
   const items = list.querySelectorAll("[data-category]");
-  const cards = document.querySelectorAll(".project-card");
+  // Только карточки проектов: у карточек статей на странице «Знания» категории нет,
+  // там пункт списка ведёт на главную
+  const cards = document.querySelectorAll(".project-card[data-category]");
   const empty = document.querySelector(".projects__empty");
   const isGrid = cards.length > 0;
   const choose = toggle.closest("[data-choose]")?.dataset.choose ?? "";

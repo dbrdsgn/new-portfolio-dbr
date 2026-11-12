@@ -5,6 +5,7 @@
 import type { CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
+import EraBoxes from '../components/EraBoxes.astro';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
 import { categoryLabel } from '../data/categories';
@@ -52,9 +53,18 @@ if (lang === 'ru') for (const w of checkGallery(entry.id, gallery, after.keys())
 
 /** Качество, с которым Astro нарезает картинки под экраны */
 const QUALITY = 80;
+
+// Картинка для превью ссылки: первая в галерее (у видео — постер). Если галерея пустая — обложка
+const first = gallery[0];
+const ogImage = first ? (first.kind === 'image' ? first.image : first.poster) : entry.data.cover;
 ---
 
-<BaseLayout title={`${project.title} — ${t('site.name')}`} description={project.description} ogImage={entry.data.cover}>
+<BaseLayout
+  title={`${project.title} — ${t('site.name')}`}
+  description={project.description}
+  ogTitle={project.title}
+  ogImage={ogImage}
+>
   <article class="ids__wrapper XL">
     <div class="ids__space L"></div>
     <h1 class="S">{project.title}</h1>
@@ -62,6 +72,9 @@ const QUALITY = 80;
     <div class="ids__space S"></div>
     <div class="ids__text-width" set:html={intro} />
     <div class="ids__space M"></div>
+
+    {/* Проба: 3D-коробки по прокрутке, только в кейсе «Эра». В «Правилах кейса» такого блока пока нет */}
+    {entry.id === 'era' && <EraBoxes />}
 
     {
       parts.map((part, p) => (

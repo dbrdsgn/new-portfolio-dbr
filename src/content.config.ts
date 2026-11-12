@@ -41,6 +41,11 @@ const articles = defineCollection({
       title: z.string(),
       date: z.coerce.date(),
       cover: image().optional(),
+      /**
+       * Сид сгенерированной обложки. Без него обложка строится по названию (title).
+       * Подбирается на странице /cover-generator
+       */
+      coverSeed: z.string().optional(),
       description: z.string().optional(),
       /** Где статья была опубликована впервые */
       source: z.url().optional(),

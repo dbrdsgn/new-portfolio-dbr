@@ -42,6 +42,10 @@ jobs:
           SITE: https://${{ github.repository_owner }}.github.io
           BASE: /${{ github.event.repository.name }}
           PUBLIC_PREVIEW: 'true'
+          # Секретный адрес страницы генератора обложек (латиница, цифры, дефис), например oblozhki-7k2x.
+          # Задаётся в Settings → Secrets and variables → Actions → New repository secret.
+          # Пока секрета нет, страница генератора не публикуется
+          COVER_GENERATOR_PATH: ${{ secrets.COVER_GENERATOR_PATH }}
 
       - uses: actions/upload-pages-artifact@v5
         with:

@@ -1,0 +1,21 @@
+---
+// Обложка заметки: генерируется из сида (название заметки или coverSeed из её шапки).
+// Картинка считается при сборке и сразу попадает в HTML — без скриптов и без мигания.
+// Скрипт только оживляет её по наведению. Генератор — в src/lib/cover.ts,
+// настройки и палитра — в src/data/cover-settings.json, подбор сида и настроек — на странице /cover-generator
+import { createCover, coverStops } from '../lib/cover';
+
+interface Props {
+  seed: string;
+  class?: string;
+}
+
+const { seed, class: className } = Astro.props;
+const stops = coverStops(createCover(seed));
+---
+
+<note-cover seed={seed} class={className} style={`--cover-stops: ${stops}`} aria-hidden="true"></note-cover>
+
+<script>
+  import '../scripts/note-cover.ts';
+</script>
