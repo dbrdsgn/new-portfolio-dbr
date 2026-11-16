@@ -1,5 +1,5 @@
 ---
-// Общий каркас всех страниц: <head>, шапка, подвал.
+// Общий каркас всех страниц: <head> и шапка.
 // IDS: tokens → settings → reset → page-composition → components, потом стили сайта
 import '../styles/ids/css/tokens/palette.css';
 import '../styles/ids/css/tokens/colors.css';
@@ -14,7 +14,6 @@ import cyrillicFont from '../styles/ids/fonts/geologica-cyrillic.woff2?url';
 import latinFont from '../styles/ids/fonts/geologica-latin.woff2?url';
 import { getImage } from 'astro:assets';
 import Header from '../components/Header.astro';
-import Footer from '../components/Footer.astro';
 import { getLangFromUrl, useTranslations, switchLangPath } from '../i18n/utils';
 
 interface Props {
@@ -95,6 +94,5 @@ const alternateEn = new URL(switchLangPath(Astro.url, 'en'), Astro.site);
     <main>
       <slot />
     </main>
-    <Footer />
   </body>
 </html>

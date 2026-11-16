@@ -1,0 +1,38 @@
+---
+// Строка тегов на странице «Проекты»: «Все», затем теги с проектами (пустые не показываются).
+// Фильтрует сетку скрипт страницы — по data-tag.
+import type { Lang } from '../i18n/ui';
+import { useTranslations, localePath } from '../i18n/utils';
+import { getProjects } from '../lib/projects';
+import { tags, categoryTag } from '../data/categories';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const projectsPage = localePath(lang, 'projects');
+
+const used = new Set((await getProjects(lang)).map((p) => categoryTag(p.entry.data.category)));
+const items = [
+  { slug: 'all', label: t('tags.all'), href: projectsPage },
+  ...tags
+    .filter((tag) => used.has(tag.slug))
+    .map((tag) => ({ slug: tag.slug, label: tag.label[lang], href: `${projectsPage}?tag=${tag.slug}` })),
+];
+---
+
+<nav aria-label={t('tags.label')}>
+  <ul class="project-tags">
+    {
+      items.map((item) => (
+        <li>
+          <a href={item.href} data-tag={item.slug} aria-current={item.slug === 'all' ? 'true' : undefined}>
+            {item.label}
+          </a>
+        </li>
+      ))
+    }
+  </ul>
+</nav>

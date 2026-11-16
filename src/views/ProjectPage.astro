@@ -14,6 +14,7 @@ import {
   getNextProject,
   getGallery,
   splitText,
+  splitCredits,
   projectYear,
   checkGallery,
   SIZES_ATTR,
@@ -30,6 +31,8 @@ const t = useTranslations(lang);
 const project = await localizeProject(entry, lang);
 const next = await getNextProject(entry, lang);
 const { intro, after } = splitText(project);
+// Строки «Сделано…» уезжают в подпись внизу страницы, остальной текст остаётся над картинками
+const { credits, rest } = splitCredits(intro);
 const gallery = getGallery(entry.id);
 
 // Галерея режется на части там, где после картинки стоит текст
@@ -65,67 +68,83 @@ const ogImage = first ? (first.kind === 'image' ? first.image : first.poster) : 
   ogTitle={project.title}
   ogImage={ogImage}
 >
-  <article class="ids__wrapper XL">
-    <div class="ids__space L"></div>
-    <h1 class="S">{project.title}</h1>
-    <p class="project-meta">{categoryLabel(entry.data.category, lang)}, {projectYear(entry)}</p>
-    <div class="ids__space S"></div>
-    <div class="ids__text-width" set:html={intro} />
+  {/*
+    Два этажа IDS: текст в стандартном (`ids__wrapper`, 70%) с `ids__text-width` внутри,
+    картинки во всю ширину (`ids__wrapper XL`). Так задумано в IDS: text-width
+    уменьшает ширину текста внутри стандартного этажа, а не внутри XL
+  */}
+  <article>
+    <div class="ids__wrapper">
+      <div class="ids__space S"></div>
+      <h1 class="S">{project.title}</h1>
+      {
+        rest && (
+          <>
+            <div class="ids__space S" />
+            <div class="ids__text-width" set:html={rest} />
+          </>
+        )
+      }
+    </div>
     <div class="ids__space M"></div>
 
     {/* Проба: 3D-коробки по прокрутке, только в кейсе «Эра». В «Правилах кейса» такого блока пока нет */}
-    {entry.id === 'era' && <EraBoxes />}
+    {entry.id === 'era' && <div class="ids__wrapper XL"><EraBoxes /></div>}
 
     {
       parts.map((part, p) => (
         <>
           {part.items.length > 0 && (
-            <div class="project-gallery">
-              {part.items.map((item) =>
-                item.kind === 'image' ? (
-                  <figure data-size={item.size}>
-                    <Image
-                      src={item.image}
-                      alt=""
-                      widths={[800, 1400, 2000, 2800]}
-                      sizes={SIZES_ATTR[item.size]}
-                      format="avif"
-                      quality={QUALITY}
-                      loading={p === 0 && item === part.items[0] ? 'eager' : 'lazy'}
-                    />
-                  </figure>
-                ) : (
-                  <figure data-size={item.size}>
-                    <video
-                      src={item.src}
-                      poster={item.poster.src}
-                      width={item.poster.width}
-                      height={item.poster.height}
-                      muted
-                      loop
-                      playsinline
-                      preload="none"
-                    />
-                    {item.sound && (
-                      <button
-                        type="button"
-                        class="site-pill project-sound"
-                        aria-pressed="false"
-                        data-on={t('project.soundOn')}
-                        data-off={t('project.soundOff')}
-                      >
-                        {t('project.soundOn')}
-                      </button>
-                    )}
-                  </figure>
-                ),
-              )}
+            <div class="ids__wrapper XL">
+              <div class="project-gallery">
+                {part.items.map((item) =>
+                  item.kind === 'image' ? (
+                    <figure data-size={item.size}>
+                      <Image
+                        src={item.image}
+                        alt=""
+                        widths={[800, 1400, 2000, 2800]}
+                        sizes={SIZES_ATTR[item.size]}
+                        format="avif"
+                        quality={QUALITY}
+                        loading={p === 0 && item === part.items[0] ? 'eager' : 'lazy'}
+                      />
+                    </figure>
+                  ) : (
+                    <figure data-size={item.size}>
+                      <video
+                        src={item.src}
+                        poster={item.poster.src}
+                        width={item.poster.width}
+                        height={item.poster.height}
+                        muted
+                        loop
+                        playsinline
+                        preload="none"
+                      />
+                      {item.sound && (
+                        <button
+                          type="button"
+                          class="site-pill project-sound"
+                          aria-pressed="false"
+                          data-on={t('project.soundOn')}
+                          data-off={t('project.soundOff')}
+                        >
+                          {t('project.soundOn')}
+                        </button>
+                      )}
+                    </figure>
+                  ),
+                )}
+              </div>
             </div>
           )}
           {part.text && (
             <>
               <div class="ids__space M" />
-              <div class="ids__text-width" set:html={part.text} />
+              <div class="ids__wrapper">
+                <div class="ids__text-width" set:html={part.text} />
+              </div>
               <div class="ids__space M" />
             </>
           )}
@@ -133,18 +152,26 @@ const ogImage = first ? (first.kind === 'image' ? first.image : first.poster) : 
       ))
     }
 
-    {
-      next && (
-        <>
-          <div class="ids__space L"></div>
-          <a class="project-next" href={next.url}>
-            <span class="project-meta">{t('project.next')}</span>
-            <span class="project-next__title">{next.title}</span>
-          </a>
-        </>
-      )
-    }
-    <div class="ids__space XL"></div>
+    <div class="ids__wrapper">
+      <div class="ids__space L"></div>
+      <footer class="project-credits">
+        {credits.map((line) => <p set:html={line} />)}
+        <p class="project-meta">{categoryLabel(entry.data.category, lang)}, {projectYear(entry)}</p>
+      </footer>
+
+      {
+        next && (
+          <>
+            <div class="ids__space S" />
+            <a class="project-next" href={next.url}>
+              <span class="project-meta">{t('project.next')}</span>
+              <span class="project-next__title">{next.title}</span>
+            </a>
+          </>
+        )
+      }
+      <div class="ids__space S"></div>
+    </div>
   </article>
 </BaseLayout>
 

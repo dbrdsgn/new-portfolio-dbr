@@ -5,6 +5,4 @@ date: "2023-01"
 cover: ./als-stroimprosto-cover.avif
 ---
 
-Сделано с Эркеном Кагаровым
-
-https://www.artlebedev.ru/stroimprosto/identity/
+Сделано с Эркеном Кагаровым в [Студии Артемия Лебедева](https://www.artlebedev.ru/stroimprosto/identity/)

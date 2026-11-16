@@ -4,6 +4,7 @@
 import { Image } from 'astro:assets';
 import type { LocalizedProject } from '../lib/projects';
 import NoteCover from './NoteCover.astro';
+import { categoryTag } from '../data/categories';
 
 interface Props {
   project: LocalizedProject;
@@ -21,7 +22,7 @@ const GENERATED_COVER_DEMO = ['btc'];
 const generated = GENERATED_COVER_DEMO.includes(entry.id);
 ---
 
-<a class="ids__sequence-item project-card" href={project.url} data-category={entry.data.category}>
+<a class="ids__sequence-item project-card" href={project.url} data-tag={categoryTag(entry.data.category)}>
   <div class="ids__rounded project-card__cover">
     {
       generated ? (

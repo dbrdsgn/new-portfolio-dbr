@@ -1,22 +1,17 @@
 ---
-// Шапка: разделы слева, плашка-фильтр «Задизайнил [всё ⌄]» по центру, язык справа. Не закреплена.
-// В списке плашки только категории, в которых есть проекты.
-import { categories } from '../data/categories';
-import { languages, type Lang } from '../i18n/ui';
+// Шапка: слева имя (на главную), «Проекты», «Знания»; справа «Почта» и язык.
+// Не закреплена, уезжает при прокрутке. «Почта» по клику копирует адрес,
+// без скриптов или без доступа к буферу открывает почтовую программу.
+import { languages, email, type Lang } from '../i18n/ui';
 import { getLangFromUrl, useTranslations, localePath, switchLangPath } from '../i18n/utils';
-import { getProjects } from '../lib/projects';
 
 const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
-const home = localePath(lang);
-
-const used = new Set((await getProjects(lang)).map((p) => p.entry.data.category));
-const menu = categories.filter((c) => used.has(c.slug));
 
 const sections = [
-  { href: localePath(lang, 'knowledge'), label: t('nav.knowledge') },
-  { href: localePath(lang, 'info'), label: t('nav.info') },
+  { href: localePath(lang), label: t('site.name') },
   { href: localePath(lang, 'projects'), label: t('nav.projects') },
+  { href: localePath(lang, 'knowledge'), label: t('nav.knowledge') },
 ];
 // Только ссылка на другой язык: на русской версии «En», на английской «Ru»
 const other = (Object.keys(languages) as Lang[]).find((l) => l !== lang)!;
@@ -27,39 +22,45 @@ const other = (Object.keys(languages) as Lang[]).find((l) => l !== lang)!;
     {sections.map((s) => <a href={s.href}>{s.label}</a>)}
   </nav>
 
-  <div class="site-filter">
-    <nav class="site-pill" aria-label={t('filter.label')} data-choose={t('filter.choose')}>
-      {t('filter.lead')}
-      <span class="site-pill__menu">
-        <button type="button" class="site-pill__toggle" aria-expanded="false" aria-controls="site-menu">
-          <span data-current-label>{t('filter.all')}</span>
-          <svg class="site-pill__chevron" viewBox="0 0 10 6" aria-hidden="true"
-            ><path d="M1 1l4 4 4-4" fill="none" stroke="currentColor" stroke-width="1.2"></path></svg
-          >
-        </button>
-        <ul class="site-pill__list" id="site-menu" hidden>
-          <li><a href={home} data-category="all" aria-current="page">{t('filter.all')}</a></li>
-          {
-            menu.map((c) => (
-              <li>
-                <a href={`${home}?category=${c.slug}`} data-category={c.slug}>
-                  {c.menu[lang]}
-                </a>
-              </li>
-            ))
-          }
-        </ul>
-      </span>
-    </nav>
-  </div>
-
-  <div class="site-lang">
-    <a href={switchLangPath(Astro.url, other)} hreflang={other} lang={other} data-lang-link>
+  <div class="site-bar__end">
+    <a
+      href={`mailto:${email}`}
+      class="site-email"
+      data-copy-email={email}
+      data-copied={t('contact.copied')}
+      title={t('contact.copy')}>{t('contact.email')}</a
+    >
+    <span class="visually-hidden" aria-live="polite" data-copy-status></span>
+    <a class="site-lang" href={switchLangPath(Astro.url, other)} hreflang={other} lang={other} data-lang-link>
       {languages[other]}
     </a>
   </div>
 </header>
 
 <script>
-  import '../scripts/filter.js';
+  // Копирование адреса почты. Подпись на секунду меняется на «Скопировано»
+  const link = document.querySelector<HTMLAnchorElement>('[data-copy-email]');
+  const status = document.querySelector<HTMLElement>('[data-copy-status]');
+  if (link && navigator.clipboard) {
+    const label = link.textContent ?? '';
+    const copied = link.dataset.copied ?? '';
+    let timer: ReturnType<typeof setTimeout>;
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      navigator.clipboard.writeText(link.dataset.copyEmail ?? '').then(
+        () => {
+          link.textContent = copied;
+          if (status) status.textContent = copied;
+          clearTimeout(timer);
+          timer = setTimeout(() => {
+            link.textContent = label;
+            if (status) status.textContent = '';
+          }, 1500);
+        },
+        () => {
+          location.href = link.href;
+        },
+      );
+    });
+  }
 </script>

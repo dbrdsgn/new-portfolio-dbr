@@ -1,5 +1,5 @@
 ---
-title: "Concept for BTK.Trud"
+title: "Design concept for Trud"
 ---
 
 Made in 12 days in 2026

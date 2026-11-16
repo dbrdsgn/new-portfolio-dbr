@@ -5,12 +5,10 @@
   --site-fade: 0.15s ease;
   /* Поля страницы — как у intuition.team: прижато к верху, низу и бокам */
   --site-header-padding: 0.5rem;
-  --site-footer-padding: 1.5rem 0.5rem;
   /* Невыбранный язык — gray-200 из палитры IDS */
   --site-lang-inactive: var(--ids__color-gray-200);
   --pill-padding-block: 0.5em 0.55em;
   --pill-tint: color-mix(in srgb, var(--ids__text) 7%, transparent);
-  --pill-chip-padding: 0.45em;
 }
 
 /* В тёмной теме gray-200 — это цвет основного текста, языки бы не различались.
@@ -28,39 +26,31 @@
   white-space: nowrap;
 }
 
-/* Подвал: горизонтальные поля даёт .ids__wrapper.XL,
-   чтобы край текста совпадал с сеткой проектов */
-footer {
-  padding-inline: 0;
-  padding-block: var(--site-footer-padding);
-}
-
-/* ---------- Шапка: разделы слева, плашка по центру, язык справа ---------- */
+/* ---------- Шапка: имя и разделы слева, почта и язык справа ---------- */
 
 /* .ids__wrapper.site-bar — чтобы перебить обнуление полей у .ids__wrapper.XL.
-   Три колонки: боковые равной ширины, поэтому плашка ровно по центру.
-   На телефоне плашка уходит на свою строку под разделами */
+   Не закреплена, уезжает при прокрутке. Если строка не помещается
+   (на телефоне), почта и язык переносятся на вторую строку */
 .ids__wrapper.site-bar {
-  display: grid;
-  grid-template-columns: 1fr auto 1fr;
-  grid-template-areas: "nav filter lang";
-  align-items: center;
-  gap: var(--ids__gap-m);
-  padding-block: var(--site-header-padding) 0;
-
-  @media (width < 768px) {
-    grid-template-columns: 1fr auto;
-    grid-template-areas:
-      "nav lang"
-      "filter filter";
-  }
-}
-
-.site-bar__nav {
-  grid-area: nav;
   display: flex;
   flex-wrap: wrap;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 0 var(--ids__gap-m);
+  padding-block: var(--site-header-padding) 0;
+}
+
+.site-bar__nav,
+.site-bar__end {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
   column-gap: var(--ids__gap-m);
+}
+
+/* Почта и язык всегда в правом углу, даже когда перенеслись на вторую строку */
+.site-bar__end {
+  margin-inline-start: auto;
 }
 
 .ids .site-bar a {
@@ -74,36 +64,59 @@ footer {
 
 /* Переключатель языка — одна ссылка на другой язык («En» / «Ru»),
    gray-200; при наведении — синим */
-.site-lang {
-  grid-area: lang;
-  justify-self: end;
-  display: inline-flex;
+.ids .site-bar a.site-lang {
+  color: var(--site-lang-inactive);
   white-space: nowrap;
 
-  & a {
-    .ids & {
-      color: var(--site-lang-inactive);
+  &:hover {
+    color: var(--ids__hover);
+  }
+}
 
-      &:hover {
-        color: var(--ids__hover);
-      }
+/* ---------- Строка тегов на странице «Проекты» ---------- */
+
+/* Теги — в стиле фрагмента кода IDS (`code`): серый текст на серой подложке.
+   Выбранный — текст основного цвета, подложка плотнее */
+.ids .project-tags {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--ids__gap-s);
+  margin: 0;
+  padding: 0;
+
+  & li {
+    margin: 0;
+    padding: 0;
+
+    &::before {
+      content: none;
+    }
+  }
+
+  & a {
+    display: block;
+    padding: 0.1em 0.4em;
+    border-radius: var(--ids__radius-s);
+    border: var(--ids__border-width-s) solid color-mix(in srgb, var(--ids__code) 10%, transparent);
+    background: color-mix(in srgb, var(--ids__code) 10%, transparent);
+    color: var(--ids__code);
+    text-decoration: none;
+    transition: color var(--site-fade), background-color var(--site-fade);
+
+    &:hover {
+      color: var(--ids__hover);
+    }
+
+    &[aria-current="true"] {
+      color: var(--ids__text);
+      background: color-mix(in srgb, var(--ids__text) 15%, transparent);
     }
   }
 }
 
-/* ---------- Плашка-фильтр «Задизайнил [всё ⌄]» ---------- */
+/* ---------- Плашка (кнопка звука на видео) ---------- */
 
-/* Стоит в шапке по центру, вместе с шапкой уезжает при прокрутке */
-.site-filter {
-  grid-area: filter;
-  position: relative;
-  z-index: 10;
-  display: flex;
-  justify-content: center;
-}
-
-.site-pill,
-.ids .site-pill__list {
+.site-pill {
   background-color: color-mix(in srgb, var(--ids__surface) 80%, transparent);
   backdrop-filter: blur(20px) saturate(1.6);
   box-shadow:
@@ -118,120 +131,6 @@ footer {
   padding-block: var(--pill-padding-block);
   padding-inline: 1em 0.55em;
   border-radius: 0.65em;
-
-  & a {
-    color: inherit;
-    text-decoration: none;
-
-    &:hover {
-      color: var(--ids__hover);
-    }
-  }
-}
-
-.site-pill__toggle {
-  appearance: none;
-  display: inline-flex;
-  align-items: baseline;
-  gap: 0.3em;
-  margin: -0.15em 0;
-  padding: 0.15em var(--pill-chip-padding);
-  border: none;
-  border-radius: 0.4em;
-  background: none;
-  font: inherit;
-  line-height: inherit;
-  color: inherit;
-  cursor: pointer;
-  transition: background-color var(--site-fade);
-
-  &:hover,
-  &[aria-expanded="true"] {
-    background-color: var(--pill-tint);
-  }
-}
-
-.site-pill__chevron {
-  width: 0.6em;
-  height: 0.36em;
-  opacity: 0.6;
-  transition: transform var(--site-fade);
-
-  [aria-expanded="true"] > & {
-    transform: rotate(180deg);
-  }
-}
-
-/* Список открывается вниз, под плашкой.
-   Невидимый «мостик» (::after) закрывает зазор, чтобы список
-   не закрывался, пока курсор переходит с плашки на него */
-.ids .site-pill__list {
-  position: absolute;
-  top: calc(100% + 0.5em);
-  left: 50%;
-  translate: -50%;
-  z-index: 2;
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: center;
-  gap: 0.15em;
-  width: max-content;
-  max-width: calc(100vw - 2rem);
-  margin: 0;
-  padding: 0.35em;
-  border-radius: 0.65em;
-  animation: site-fade-in var(--site-fade);
-
-  &::after {
-    content: "";
-    position: absolute;
-    left: 0;
-    right: 0;
-    bottom: 100%;
-    height: 0.6em;
-  }
-
-  &[hidden] {
-    display: none;
-  }
-
-  /* Сбрасываем маркеры списков IDS */
-  & li {
-    margin: 0;
-    padding: 0;
-
-    &::before {
-      content: none;
-    }
-  }
-
-  & a {
-    display: block;
-    padding: 0.3em 0.6em;
-    border-radius: 0.4em;
-
-    &:hover {
-      background-color: var(--pill-tint);
-    }
-
-    &[aria-current="page"] {
-      background-color: var(--pill-tint);
-      color: var(--ids__text);
-    }
-  }
-}
-
-@keyframes site-fade-in {
-  from {
-    opacity: 0;
-    translate: -50% -0.3em;
-  }
-}
-
-@media (prefers-reduced-motion: reduce) {
-  .ids .site-pill__list {
-    animation: none;
-  }
 }
 
 /* ---------- Сетка проектов ---------- */
@@ -276,10 +175,6 @@ footer {
   font-size: 1em;
   font-weight: 300;
   margin-bottom: 0;
-}
-
-.projects__empty {
-  color: var(--ids__text-caption);
 }
 
 /* ---------- Обложки заметок (генератор — src/lib/cover.ts) ---------- */
@@ -635,7 +530,7 @@ note-cover {
   }
 }
 
-/* Кнопка звука на видео: та же плашка, что и фильтр в шапке */
+/* Кнопка звука на видео: плашка .site-pill */
 .ids .project-sound {
   position: absolute;
   left: var(--ids__gap-m);
@@ -649,6 +544,19 @@ note-cover {
 
   &:hover {
     color: var(--ids__hover);
+  }
+}
+
+/* Подпись внизу кейса: за сколько сделано, с кем, категория и год.
+   Строки стоят плотно друг под другом, цвет — как у тегов .project-meta.
+   padding: 0 — чтобы перебить общее правило IDS для footer, иначе текст
+   сдвинут на 1rem и не совпадает по краю с названием и картинками */
+.project-credits {
+  padding: 0;
+  color: var(--ids__text-caption);
+
+  .ids & p {
+    margin-bottom: 0;
   }
 }
 
@@ -685,40 +593,3 @@ note-cover {
   }
 }
 
-/* ---------- Подвал ---------- */
-
-/* Шрифт подвала меньше основного — 0.8em, как подписи в IDS */
-.site-footer__inner {
-  display: flex;
-  flex-wrap: wrap;
-  justify-content: space-between;
-  gap: var(--ids__gap-m);
-  font-size: 0.8em;
-  color: var(--ids__text-caption);
-
-  & p {
-    margin: 0;
-  }
-
-  /* Слева: две строки приглашения, под ними почта и Telegram */
-  & .site-footer__contacts {
-    display: flex;
-    flex-direction: column;
-    gap: var(--ids__gap-s);
-  }
-
-  /* Ссылки серые, как текст подвала; при наведении — синие */
-  .ids & a {
-    color: var(--ids__text-caption);
-
-    &:hover {
-      color: var(--ids__hover);
-    }
-  }
-
-  & .site-footer__links {
-    display: flex;
-    flex-wrap: wrap;
-    gap: var(--ids__gap-m);
-  }
-}

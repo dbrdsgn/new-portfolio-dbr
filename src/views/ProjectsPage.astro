@@ -1,0 +1,77 @@
+---
+// «Проекты»: строка тегов и сетка всех проектов по дате, новые сверху.
+// Тег фильтрует сетку и пишется в адрес (?tag=graphics), поэтому
+// отфильтрованную страницу можно отправить ссылкой. «Все» выбран по умолчанию.
+import BaseLayout from '../layouts/BaseLayout.astro';
+import ProjectCard from '../components/ProjectCard.astro';
+import ProjectTags from '../components/ProjectTags.astro';
+import type { Lang } from '../i18n/ui';
+import { useTranslations } from '../i18n/utils';
+import { getProjects } from '../lib/projects';
+
+interface Props {
+  lang: Lang;
+}
+
+const { lang } = Astro.props;
+const t = useTranslations(lang);
+const projects = await getProjects(lang);
+---
+
+<BaseLayout title={`${t('nav.projects')} — ${t('site.name')}`} ogTitle={t('nav.projects')}>
+  <h1 class="visually-hidden">{t('nav.projects')}</h1>
+  <div class="ids__wrapper XL">
+    <div class="ids__space S"></div>
+
+    <ProjectTags lang={lang} />
+
+    <div class="ids__space S"></div>
+
+    <section aria-label={t('projects.label')}>
+      <div class="ids__sequence L gap-S">
+        {projects.map((project, i) => <ProjectCard project={project} eager={i < 3} />)}
+      </div>
+    </section>
+
+    <div class="ids__space S"></div>
+  </div>
+</BaseLayout>
+
+<script>
+  // «Все» — data-tag="all", в адрес не пишется
+  const links = document.querySelectorAll<HTMLAnchorElement>('.project-tags a[data-tag]');
+  const cards = document.querySelectorAll<HTMLElement>('.project-card[data-tag]');
+  const known = new Set([...links].map((l) => l.dataset.tag));
+
+  function apply(tag: string | null) {
+    if (!tag || tag === 'all' || !known.has(tag)) tag = null;
+    cards.forEach((card) => {
+      card.hidden = tag !== null && card.dataset.tag !== tag;
+    });
+    links.forEach((link) => {
+      if (link.dataset.tag === (tag ?? 'all')) link.setAttribute('aria-current', 'true');
+      else link.removeAttribute('aria-current');
+    });
+    // Адрес страницы и ссылка на другой язык помнят выбранный тег
+    const url = new URL(location.href);
+    if (tag) url.searchParams.set('tag', tag);
+    else url.searchParams.delete('tag');
+    history.replaceState(null, '', url);
+    document.querySelectorAll<HTMLAnchorElement>('[data-lang-link]').forEach((link) => {
+      const target = new URL(link.href);
+      if (tag) target.searchParams.set('tag', tag);
+      else target.searchParams.delete('tag');
+      link.href = target.href;
+    });
+    return tag;
+  }
+
+  apply(new URLSearchParams(location.search).get('tag'));
+
+  links.forEach((link) => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      apply(link.dataset.tag ?? null);
+    });
+  });
+</script>

@@ -1,6 +1,7 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import type { Lang } from '../i18n/ui';
 import { localePath } from '../i18n/utils';
+import { homeOrder } from '../data/home';
 
 type Project = CollectionEntry<'projects'>;
 type Translation = CollectionEntry<'translations'>;
@@ -43,10 +44,33 @@ function compare(a: Project, b: Project): number {
   );
 }
 
-/** Все видимые проекты по порядку. Все они стоят на главной */
+/** Все видимые проекты по дате. Так они стоят на странице «Проекты» */
 export async function getProjects(lang: Lang): Promise<LocalizedProject[]> {
   const [projects, tr] = await Promise.all([getCollection('projects', (p) => !p.data.hidden), translationsMap()]);
   return projects.sort(compare).map((p) => localize(p, lang, tr.get(`projects/${p.id}`)));
+}
+
+/**
+ * Проекты для главной в порядке из src/data/home.ts.
+ * Проекты не из списка — в конце, по дате, с предупреждением. Неизвестный адрес в списке — ошибка
+ */
+export async function getHomeProjects(lang: Lang): Promise<LocalizedProject[]> {
+  const byDate = await getProjects(lang);
+  const all = await getCollection('projects');
+  const unknown = homeOrder.filter((id) => !all.some((p) => p.id === id));
+  if (unknown.length) {
+    throw new Error(`[главная] В src/data/home.ts нет таких проектов: ${unknown.join(', ')}`);
+  }
+  const rank = (id: string) => {
+    const i = homeOrder.indexOf(id);
+    return i === -1 ? homeOrder.length : i;
+  };
+  const missing = byDate.filter((p) => !homeOrder.includes(p.entry.id)).map((p) => p.entry.id);
+  if (missing.length) {
+    console.warn(`[главная] Этих проектов нет в src/data/home.ts, они стоят в конце по дате: ${missing.join(', ')}`);
+  }
+  // Сортировка устойчивая: проекты не из списка сохраняют порядок по дате
+  return [...byDate].sort((a, b) => rank(a.entry.id) - rank(b.entry.id));
 }
 
 export async function localizeProject(entry: Project, lang: Lang): Promise<LocalizedProject> {
@@ -117,6 +141,31 @@ export function splitText(project: LocalizedProject): { intro: string; after: Ma
   const after = new Map<number, string>();
   for (let i = 1; i < parts.length; i += 2) after.set(Number(parts[i]), parts[i + 1].trim());
   return { intro: parts[0].trim(), after };
+}
+
+/**
+ * Абзац авторства: «Сделано за 12 дней…», «Сделано с…» / «Made in…», «Made with…».
+ * После слова — любой пробел, в том числе неразрывный: \b в JS не считает кириллицу буквами
+ */
+const CREDIT = /^<p>(?:Сделано|Made)[\s ]/;
+
+/** Один абзац целиком, с его содержимым отдельно */
+const PARAGRAPH = /^<p>([\s\S]*?)<\/p>\s*/;
+
+/**
+ * Авторство отделяется от текста кейса: абзацы «Сделано…» в начале уезжают в подпись внизу страницы,
+ * остальной текст остаётся над картинками. Если кроме авторства в кейсе ничего нет, сверху текста не будет
+ */
+export function splitCredits(intro: string): { credits: string[]; rest: string } {
+  const credits: string[] = [];
+  let rest = intro.trim();
+  while (CREDIT.test(rest)) {
+    const m = rest.match(PARAGRAPH);
+    if (!m) break;
+    credits.push(m[1].trim());
+    rest = rest.slice(m[0].length);
+  }
+  return { credits, rest: rest.trim() };
 }
 
 /* ---------- Галерея кейса ---------- */
