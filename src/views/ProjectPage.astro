@@ -8,14 +8,12 @@ import BaseLayout from '../layouts/BaseLayout.astro';
 import EraBoxes from '../components/EraBoxes.astro';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
-import { categoryLabel } from '../data/categories';
 import {
   localizeProject,
   getNextProject,
   getGallery,
   splitText,
   splitCredits,
-  projectYear,
   checkGallery,
   SIZES_ATTR,
   type GalleryItem,
@@ -75,7 +73,7 @@ const ogImage = first ? (first.kind === 'image' ? first.image : first.poster) : 
   */}
   <article>
     <div class="ids__wrapper">
-      <div class="ids__space S"></div>
+      <div class="ids__space M"></div>
       <h1 class="S">{project.title}</h1>
       {
         rest && (
@@ -154,15 +152,18 @@ const ogImage = first ? (first.kind === 'image' ? first.image : first.poster) : 
 
     <div class="ids__wrapper">
       <div class="ids__space L"></div>
-      <footer class="project-credits">
-        {credits.map((line) => <p set:html={line} />)}
-        <p class="project-meta">{categoryLabel(entry.data.category, lang)}, {projectYear(entry)}</p>
-      </footer>
+      {
+        credits.length > 0 && (
+          <footer class="project-credits">
+            {credits.map((line) => <p set:html={line} />)}
+          </footer>
+        )
+      }
 
       {
         next && (
           <>
-            <div class="ids__space S" />
+            {credits.length > 0 && <div class="ids__space S" />}
             <a class="project-next" href={next.url}>
               <span class="project-meta">{t('project.next')}</span>
               <span class="project-next__title">{next.title}</span>

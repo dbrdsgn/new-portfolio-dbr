@@ -1,5 +1,5 @@
 ---
-// Шапка: слева имя (на главную), «Проекты», «Знания»; справа «Почта» и язык.
+// Шапка: слева имя (на главную); справа «Проекты», «Знания», «Почта» и язык.
 // Не закреплена, уезжает при прокрутке. «Почта» по клику копирует адрес,
 // без скриптов или без доступа к буферу открывает почтовую программу.
 import { languages, email, type Lang } from '../i18n/ui';
@@ -9,7 +9,6 @@ const lang = getLangFromUrl(Astro.url);
 const t = useTranslations(lang);
 
 const sections = [
-  { href: localePath(lang), label: t('site.name') },
   { href: localePath(lang, 'projects'), label: t('nav.projects') },
   { href: localePath(lang, 'knowledge'), label: t('nav.knowledge') },
 ];
@@ -18,11 +17,12 @@ const other = (Object.keys(languages) as Lang[]).find((l) => l !== lang)!;
 ---
 
 <header class="ids__wrapper XL site-bar">
-  <nav class="site-bar__nav" aria-label={t('nav.label')}>
-    {sections.map((s) => <a href={s.href}>{s.label}</a>)}
-  </nav>
+  <a href={localePath(lang)}>{t('site.name')}</a>
 
   <div class="site-bar__end">
+    <nav class="site-bar__nav" aria-label={t('nav.label')}>
+      {sections.map((s) => <a href={s.href}>{s.label}</a>)}
+    </nav>
     <a
       href={`mailto:${email}`}
       class="site-email"

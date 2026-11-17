@@ -2,12 +2,14 @@ import type { Lang } from '../i18n/ui';
 
 /**
  * Теги на странице «Проекты». Каждый тег объединяет несколько категорий.
- * Порядок здесь = порядок в строке тегов. Тег без проектов не показывается.
+ * Порядок здесь = порядок в строке тегов. Показываются все теги, даже без проектов.
+ * «Эндиэй» пока ни с одной категорией не связан: как отмечать такие проекты, ещё не решено.
  */
 export const tags = [
   { slug: 'web', label: { ru: 'Веб', en: 'Web' } },
   { slug: 'graphics', label: { ru: 'Графика', en: 'Graphics' } },
   { slug: 'navigation', label: { ru: 'Навигация', en: 'Wayfinding' } },
+  { slug: 'nda', label: { ru: 'Эндиэй', en: 'NDA' } },
 ] as const;
 
 export type TagSlug = (typeof tags)[number]['slug'];
