@@ -1,5 +1,6 @@
 ---
 title: "Дизайн-концепция для «Труд»"
+subtitle: ""
 category: branding
 date: "2026-03"
 cover: ./btc-cover.avif

@@ -11,6 +11,8 @@ export interface LocalizedProject {
   entry: Project;
   translation?: Translation;
   title: string;
+  /** Подзаголовок на карточке, над названием. Пустой — не показывается */
+  subtitle?: string;
   /** Для поисковиков и превью ссылок: начало текста кейса */
   description: string;
   url: string;
@@ -32,6 +34,7 @@ function localize(entry: Project, lang: Lang, tr?: Translation): LocalizedProjec
     entry,
     translation: t,
     title: t?.data.title ?? entry.data.title,
+    subtitle: (t?.data.subtitle || entry.data.subtitle)?.trim() || undefined,
     description: excerpt((t ?? entry).body ?? ''),
     url: localePath(lang, `projects/${entry.id}`),
     opens: opens(entry),

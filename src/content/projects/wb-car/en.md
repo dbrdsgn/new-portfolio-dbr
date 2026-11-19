@@ -1,5 +1,6 @@
 ---
 title: "Vehicle Branding for WB"
+subtitle: ""
 ---
 
 Made in 2 days in 2024

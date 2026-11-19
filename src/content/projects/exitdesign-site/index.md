@@ -1,5 +1,6 @@
 ---
 title: "Сайт для «Выход в город»"
+subtitle: ""
 category: web
 date: "2025-01"
 order: 20

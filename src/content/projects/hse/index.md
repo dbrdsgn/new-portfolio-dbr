@@ -1,5 +1,6 @@
 ---
 title: "Визуальное исследование для НИУ ВШЭ"
+subtitle: ""
 category: presentations
 date: "2020-01"
 cover: ./hse-cover.avif

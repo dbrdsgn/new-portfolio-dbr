@@ -9,6 +9,8 @@
   --site-lang-inactive: var(--ids__color-gray-200);
   --pill-padding-block: 0.5em 0.55em;
   --pill-tint: color-mix(in srgb, var(--ids__text) 7%, transparent);
+  /* Шрифт шапки не меняется с шириной экрана */
+  --site-header-font: 21px;
 }
 
 /* В тёмной теме gray-200 — это цвет основного текста, языки бы не различались.
@@ -26,18 +28,25 @@
   white-space: nowrap;
 }
 
-/* ---------- Шапка: имя и разделы слева, почта и язык справа ---------- */
+/* ---------- Шапка: имя слева, разделы, почта и язык справа ---------- */
 
 /* .ids__wrapper.site-bar — чтобы перебить обнуление полей у .ids__wrapper.XL.
-   Не закреплена, уезжает при прокрутке. Если строка не помещается
-   (на телефоне), правая группа переносится на вторую строку */
+   Не закреплена, уезжает при прокрутке. Шрифт один на всех экранах, промежутки
+   в em от него — шапка везде одного размера. На телефоне (до 768) разделы
+   встают второй строкой под имя, по левому краю */
 .ids__wrapper.site-bar {
   display: flex;
   flex-wrap: wrap;
   justify-content: space-between;
   align-items: baseline;
-  gap: 0 var(--ids__gap-m);
+  gap: 0 1em;
   padding-block: var(--site-header-padding) 0;
+  font-size: var(--site-header-font);
+
+  @media (width < 768px) {
+    flex-direction: column;
+    align-items: flex-start;
+  }
 }
 
 .site-bar__nav,
@@ -45,12 +54,16 @@
   display: flex;
   flex-wrap: wrap;
   align-items: baseline;
-  column-gap: var(--ids__gap-m);
+  column-gap: 1em;
 }
 
-/* Проекты, знания, почта и язык всегда в правом углу, даже когда перенеслись на вторую строку */
+/* Разделы, почта и язык в правом углу */
 .site-bar__end {
   margin-inline-start: auto;
+
+  @media (width < 768px) {
+    margin-inline-start: 0;
+  }
 }
 
 .ids .site-bar a {
@@ -76,17 +89,25 @@
 /* ---------- Строка тегов на странице «Проекты» ---------- */
 
 /* Теги — в стиле фрагмента кода IDS (`code`): серый текст на серой подложке.
-   Выбранный — текст основного цвета, подложка плотнее */
+   Выбранный — текст основного цвета, подложка плотнее.
+   Не помещаются в строку — прокручиваются вбок, без полосы прокрутки */
 .ids .project-tags {
   display: flex;
-  flex-wrap: wrap;
   gap: var(--ids__gap-s);
   margin: 0;
   padding: 0;
+  overflow-x: auto;
+  scrollbar-width: none;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
 
   & li {
+    flex: none;
     margin: 0;
     padding: 0;
+    white-space: nowrap;
 
     &::before {
       content: none;
@@ -135,11 +156,13 @@
 
 /* ---------- Сетка проектов ---------- */
 
-/* Карточка — ссылка на кейс. Цвет текста обычный, при наведении название синее.
+/* Карточка — ссылка на кейс (и на статью в «Знаниях»). Цвет текста обычный, при наведении название синее.
    Карточка кейса под NDA без фото — не ссылка: выглядит так же, но не нажимается */
 .ids .project-card {
   /* Единое соотношение обложек в сетке. Меняется здесь одной строкой */
   --cover-ratio: 4 / 3;
+  /* Скругление обложки (сквиркл .ids__rounded). В IDS по умолчанию 1.5em */
+  --ids__radius: 2em;
 
   display: block;
   color: var(--ids__text);
@@ -176,6 +199,42 @@
   font-size: 1em;
   font-weight: 300;
   margin-bottom: 0;
+}
+
+/* Карточки на главной и «Проектах» (ProjectGrid).
+   3 в ряд на компьютере (от 1280), 2 на планшете (768–1279), 1 на телефоне (до 768) */
+.project-grid {
+  /* Между рядами 2em, между карточками в ряду — по-прежнему --ids__gap-s */
+  &.ids__sequence {
+    row-gap: 2em;
+  }
+
+  /* &.ids__sequence.L — чтобы перебить правило IDS .ids__sequence.L .ids__sequence-item */
+  @media (width < 1280px) {
+    &.ids__sequence.L .ids__sequence-item {
+      --columns: 2;
+    }
+  }
+
+  @media (width < 768px) {
+    &.ids__sequence.L .ids__sequence-item {
+      --columns: 1;
+    }
+  }
+
+  /* Подзаголовок на шаг шкалы IDS крупнее основного текста: 1.1em, как h4.
+     Название — цветом текста, при наведении синее (правило .project-card выше) */
+  .ids & .project-card__subtitle {
+    margin: 0;
+    font-size: 1.1em;
+  }
+
+  /* На планшете и телефоне (до 1280) подзаголовок и название — ровно размера шапки */
+  @media (width < 1280px) {
+    .ids & :is(.project-card__subtitle, .project-card__title) {
+      font-size: var(--site-header-font);
+    }
+  }
 }
 
 /* ---------- Обложки заметок (генератор — src/lib/cover.ts) ---------- */

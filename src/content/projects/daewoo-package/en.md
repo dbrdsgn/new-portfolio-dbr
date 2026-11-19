@@ -1,5 +1,6 @@
 ---
 title: "Packaging for Daewoo"
+subtitle: ""
 ---
 
 Made in 2 days in 2024

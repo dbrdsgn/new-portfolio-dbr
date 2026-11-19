@@ -1,5 +1,6 @@
 ---
 title: "Сайт для «Тион»"
+subtitle: ""
 category: web
 date: "2026-02"
 cover: ./tion-landing-cover.avif

@@ -1,5 +1,6 @@
 ---
 title: "Брендирование авто для «WB»"
+subtitle: ""
 category: branding
 date: "2024-02"
 cover: ./wb-car-cover.avif

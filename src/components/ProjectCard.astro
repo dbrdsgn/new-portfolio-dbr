@@ -1,7 +1,8 @@
 ---
-// Карточка проекта в сетке: обложка + название, ведёт на страницу кейса.
+// Карточка проекта в сетке: обложка, подзаголовок, название. Ведёт на страницу кейса.
 // Astro нарезает обложку на несколько размеров, браузер берёт подходящий экрану.
-// У кейса под NDA обложка из генератора (по числу coverHash, без названия в HTML).
+// У кейса под NDA обложка из генератора (по числу coverHash, без названия в HTML),
+// у обычного кейса с coverSeed — тоже из генератора, по этому сиду.
 // Если у него нет фото, страницы нет и карточка не нажимается.
 import { Image } from 'astro:assets';
 import type { LocalizedProject } from '../lib/projects';
@@ -27,13 +28,13 @@ const Card = project.opens ? 'a' : 'div';
   <div class="ids__rounded project-card__cover">
     {
       isNda(entry.data.category) || !entry.data.cover ? (
-        <NoteCover hash={entry.data.coverHash} />
+        <NoteCover hash={entry.data.coverHash} seed={entry.data.coverSeed} />
       ) : (
         <Image
           src={entry.data.cover}
           alt=""
-          widths={[400, 800, 1200]}
-          sizes="(width < 768px) 50vw, 33vw"
+          widths={[400, 800, 1200, 1800]}
+          sizes="(width < 768px) 100vw, (width < 1280px) 50vw, 33vw"
           format="avif"
           quality={80}
           loading={eager ? 'eager' : 'lazy'}
@@ -41,5 +42,6 @@ const Card = project.opens ? 'a' : 'div';
       )
     }
   </div>
-  <h2 class="project-card__title">{project.title}</h2>
+  {project.subtitle && <p class="project-card__subtitle">{project.subtitle}</p>}
+  <h2 class="project-card__title"><span>{project.title}</span></h2>
 </Card>

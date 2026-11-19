@@ -1,5 +1,6 @@
 ---
 title: "Концепт стиля конференции «Ростелеком»"
+subtitle: ""
 category: branding
 date: "2023-01"
 cover: ./rostelecom-cover.avif

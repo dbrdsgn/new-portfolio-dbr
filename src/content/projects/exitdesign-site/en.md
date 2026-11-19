@@ -1,5 +1,6 @@
 ---
 title: "Website for Vykhod v Gorod"
+subtitle: ""
 ---
 
 Made in 60 days in 2025

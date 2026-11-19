@@ -1,0 +1,27 @@
+---
+// Сетка карточек на главной и «Проектах»: 3 в ряд на компьютере (ids__sequence L), 2 на планшете, 1 на телефоне (site.css).
+// На главной в сетке может стоять и статья из «Знаний»
+import ProjectCard from './ProjectCard.astro';
+import ArticleCard from './ArticleCard.astro';
+import type { LocalizedProject } from '../lib/projects';
+import type { LocalizedArticle } from '../lib/articles';
+
+export type GridItem = { project: LocalizedProject } | { article: LocalizedArticle };
+
+interface Props {
+  items: GridItem[];
+  label: string;
+}
+
+const { items, label } = Astro.props;
+---
+
+<section aria-label={label}>
+  <div class="ids__sequence L gap-S project-grid">
+    {
+      items.map((item, i) =>
+        'project' in item ? <ProjectCard project={item.project} eager={i < 3} /> : <ArticleCard article={item.article} />,
+      )
+    }
+  </div>
+</section>

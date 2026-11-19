@@ -3,7 +3,7 @@ import type { Lang } from '../i18n/ui';
 /**
  * Теги на странице «Проекты». Каждый тег объединяет несколько категорий.
  * Порядок здесь = порядок в строке тегов. Показываются все теги, даже без проектов.
- * «Нейро» пока ни с одной категорией не связан. «Эндиэй» — категория nda, правила для неё — в «Правила кейса.md».
+ * «Нейро» — категория neuro. «Эндиэй» — категория nda, правила для неё — в «Правила кейса.md».
  */
 export const tags = [
   { slug: 'web', label: { ru: 'Веб', en: 'Web' } },
@@ -27,6 +27,7 @@ export const categories = [
   { slug: 'presentations', tag: 'graphics', label: { ru: 'Презентации', en: 'Presentations' } },
   { slug: 'navigation', tag: 'navigation', label: { ru: 'Навигация', en: 'Wayfinding' } },
   { slug: 'logos', tag: 'graphics', label: { ru: 'Логотип', en: 'Logo' } },
+  { slug: 'neuro', tag: 'neuro', label: { ru: 'Нейро', en: 'AI' } },
   { slug: 'nda', tag: 'nda', label: { ru: 'Эндиэй', en: 'NDA' } },
 ] as const satisfies readonly { slug: string; tag: TagSlug; label: Record<Lang, string> }[];
 

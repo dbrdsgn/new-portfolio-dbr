@@ -1,5 +1,6 @@
 ---
 title: "Логотип для «Тион»"
+subtitle: ""
 category: logos
 date: "2026-01"
 cover: ./tion-logo-cover.avif

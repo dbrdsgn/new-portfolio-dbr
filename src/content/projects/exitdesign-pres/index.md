@@ -1,5 +1,6 @@
 ---
 title: "Стиль презентаций для «Выход в город»"
+subtitle: ""
 category: branding
 date: "2025-01"
 order: 30

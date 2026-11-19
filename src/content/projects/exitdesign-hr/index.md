@@ -1,5 +1,6 @@
 ---
 title: "Фирменный стиль для «Выход в город»"
+subtitle: ""
 category: branding
 date: "2025-01"
 order: 10

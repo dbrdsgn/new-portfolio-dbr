@@ -1,5 +1,6 @@
 ---
 title: "Design concept for Trud"
+subtitle: ""
 ---
 
 The task was to propose a visual concept that could be adapted for an advertising campaign and used in marketplace product cards.

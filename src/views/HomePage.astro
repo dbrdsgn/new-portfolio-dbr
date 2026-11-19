@@ -1,11 +1,13 @@
 ---
-// Главная: сетка проектов по дате, тот же порядок, что на странице «Проекты». Без тегов —
-// фильтр есть только на странице «Проекты»
+// Главная: карточки по документу «Порядок на главной.md» в корне проекта — кейсы и статьи из «Знаний» вперемешку.
+// Без тегов — фильтр есть только на странице «Проекты»
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ProjectCard from '../components/ProjectCard.astro';
+import ProjectGrid, { type GridItem } from '../components/ProjectGrid.astro';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
 import { getProjects } from '../lib/projects';
+import { getArticles } from '../lib/articles';
+import { readHomeOrder, sameTitle } from '../data/home';
 
 interface Props {
   lang: Lang;
@@ -13,7 +15,23 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-const projects = await getProjects(lang);
+// Названия ищем по русским версиям: в документе Денис пишет по-русски
+const [projects, articles, projectsRu, articlesRu] = await Promise.all([
+  getProjects(lang),
+  getArticles(lang),
+  getProjects('ru'),
+  getArticles('ru'),
+]);
+
+const items: GridItem[] = readHomeOrder().map((name) => {
+  const projectId = projectsRu.find((p) => p.entry.id === name || sameTitle(p.title, name))?.entry.id;
+  const project = projects.find((p) => p.entry.id === projectId);
+  if (project) return { project };
+  const articleId = articlesRu.find((a) => a.entry.id === name || sameTitle(a.title, name))?.entry.id;
+  const article = articles.find((a) => a.entry.id === articleId);
+  if (article) return { article };
+  throw new Error(`[главная] «Порядок на главной.md»: не нашёл кейс или статью «${name}» (или они скрыты)`);
+});
 ---
 
 <BaseLayout>
@@ -21,11 +39,7 @@ const projects = await getProjects(lang);
   <div class="ids__wrapper XL">
     <div class="ids__space M"></div>
 
-    <section aria-label={t('projects.label')}>
-      <div class="ids__sequence L gap-S">
-        {projects.map((project, i) => <ProjectCard project={project} eager={i < 3} />)}
-      </div>
-    </section>
+    <ProjectGrid items={items} label={t('projects.label')} />
 
     <div class="ids__space S"></div>
   </div>

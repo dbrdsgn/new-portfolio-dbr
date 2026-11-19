@@ -3,7 +3,7 @@
 // Тег фильтрует сетку и пишется в адрес (?tag=graphics), поэтому
 // отфильтрованную страницу можно отправить ссылкой. «Все» выбран по умолчанию.
 import BaseLayout from '../layouts/BaseLayout.astro';
-import ProjectCard from '../components/ProjectCard.astro';
+import ProjectGrid from '../components/ProjectGrid.astro';
 import ProjectTags from '../components/ProjectTags.astro';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
@@ -27,11 +27,7 @@ const projects = await getProjects(lang);
 
     <div class="ids__space S"></div>
 
-    <section aria-label={t('projects.label')}>
-      <div class="ids__sequence L gap-S">
-        {projects.map((project, i) => <ProjectCard project={project} eager={i < 3} />)}
-      </div>
-    </section>
+    <ProjectGrid items={projects.map((project) => ({ project }))} label={t('projects.label')} />
 
     <div class="ids__space S"></div>
   </div>
@@ -47,8 +43,7 @@ const projects = await getProjects(lang);
     if (!tag || tag === 'all' || !known.has(tag)) tag = null;
     cards.forEach((card) => {
       card.hidden = tag !== null && card.dataset.tag !== tag;
-    });
-    links.forEach((link) => {
+    });    links.forEach((link) => {
       if (link.dataset.tag === (tag ?? 'all')) link.setAttribute('aria-current', 'true');
       else link.removeAttribute('aria-current');
     });

@@ -1,5 +1,6 @@
 ---
 title: "Упаковка для «Дэу»"
+subtitle: ""
 category: packaging
 date: "2024-01"
 cover: ./daewoo-package-cover.avif
