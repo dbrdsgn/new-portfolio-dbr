@@ -25,12 +25,26 @@ const projects = defineCollection({
       category: z.enum(categorySlugs),
       /** ГГГГ-ММ: месяц нужен только для порядка, на сайте виден год */
       date: z.string().regex(/^\d{4}-(0[1-9]|1[0-2])$/, 'дата пишется как ГГГГ-ММ, например 2023-05'),
-      /** Обложка карточки на главной: <адрес>-cover.avif */
-      cover: image(),
+      /** Обложка карточки на главной: <адрес>-cover.avif. У кейсов под NDA её нет */
+      cover: image().optional(),
+      /**
+       * Только у кейсов под NDA: число, из которого генератор строит обложку.
+       * Считается из настоящего названия: node scripts/nda-seed.ts "Название".
+       * Само название в репозиторий не попадает
+       */
+      coverHash: z.number().int().nonnegative().optional(),
       /** Только для кейсов с одинаковой датой: меньше — выше. Без него — по имени папки */
       order: z.number().optional(),
       /** Убрать с сайта: страница открывается по прямой ссылке, но карточки нет */
       hidden: z.boolean().default(false),
+    })
+    .superRefine((data, ctx) => {
+      if (data.category === 'nda' && data.coverHash === undefined) {
+        ctx.addIssue({ code: 'custom', path: ['coverHash'], message: 'у кейса под NDA нужен coverHash: node scripts/nda-seed.ts "Название"' });
+      }
+      if (data.category !== 'nda' && !data.cover) {
+        ctx.addIssue({ code: 'custom', path: ['cover'], message: 'нет обложки: нужен файл <адрес>-cover' });
+      }
     }),
 });
 

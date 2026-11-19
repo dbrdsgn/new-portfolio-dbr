@@ -6,15 +6,17 @@
 import { createCover, coverStops } from '../lib/cover';
 
 interface Props {
-  seed: string;
+  seed?: string;
+  /** Вместо сида — уже посчитанное из него число: у кейсов под NDA название в HTML не попадает */
+  hash?: number;
   class?: string;
 }
 
-const { seed, class: className } = Astro.props;
-const stops = coverStops(createCover(seed));
+const { seed = '', hash, class: className } = Astro.props;
+const stops = coverStops(createCover(hash ?? seed));
 ---
 
-<note-cover seed={seed} class={className} style={`--cover-stops: ${stops}`} aria-hidden="true"></note-cover>
+<note-cover seed={hash === undefined ? seed : undefined} hash={hash} class={className} style={`--cover-stops: ${stops}`} aria-hidden="true"></note-cover>
 
 <script>
   import '../scripts/note-cover.ts';

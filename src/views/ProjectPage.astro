@@ -6,6 +6,7 @@ import type { CollectionEntry } from 'astro:content';
 import { Image } from 'astro:assets';
 import BaseLayout from '../layouts/BaseLayout.astro';
 import EraBoxes from '../components/EraBoxes.astro';
+import { isNda } from '../data/categories';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
 import {
@@ -94,7 +95,7 @@ const ogImage = first ? (first.kind === 'image' ? first.image : first.poster) : 
         <>
           {part.items.length > 0 && (
             <div class="ids__wrapper XL">
-              <div class="project-gallery">
+              <div class="project-gallery" data-nda={isNda(entry.data.category) || undefined}>
                 {part.items.map((item) =>
                   item.kind === 'image' ? (
                     <figure data-size={item.size}>

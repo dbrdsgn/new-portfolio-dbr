@@ -135,8 +135,9 @@
 
 /* ---------- Сетка проектов ---------- */
 
-/* Карточка — ссылка на кейс. Цвет текста обычный, при наведении название синее */
-.ids a.project-card {
+/* Карточка — ссылка на кейс. Цвет текста обычный, при наведении название синее.
+   Карточка кейса под NDA без фото — не ссылка: выглядит так же, но не нажимается */
+.ids .project-card {
   /* Единое соотношение обложек в сетке. Меняется здесь одной строкой */
   --cover-ratio: 4 / 3;
 
@@ -144,7 +145,7 @@
   color: var(--ids__text);
   text-decoration: none;
 
-  &:hover .project-card__title {
+  &:is(a):hover .project-card__title {
     color: var(--ids__hover);
   }
 
@@ -530,9 +531,29 @@ note-cover {
   }
 }
 
-/* Кнопка звука на видео: плашка .site-pill */
+/*
+ * Кейс под NDA: фото размыты уже в файлах (scripts/media.mjs, NDA_BLUR),
+ * поверх на сайте — плёночное зерно: SVG-шум в режиме overlay.
+ * Сила зерна — --nda-grain, 0.5 = 50%
+ */
+.project-gallery[data-nda] figure::after {
+  --nda-grain: 0.5;
+
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: var(--ids__radius-m);
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px;
+  mix-blend-mode: overlay;
+  opacity: var(--nda-grain);
+  pointer-events: none;
+}
+
+/* Кнопка звука на видео: плашка .site-pill. Стоит над зерном */
 .ids .project-sound {
   position: absolute;
+  z-index: 1;
   left: var(--ids__gap-m);
   bottom: var(--ids__gap-m);
   padding-inline: 1em;

@@ -1,7 +1,7 @@
 ---
 title: "Айдентика «СтроимПросто»"
 category: branding
-date: "2023-01"
+date: "2023-03"
 cover: ./als-stroimprosto-cover.avif
 ---
 

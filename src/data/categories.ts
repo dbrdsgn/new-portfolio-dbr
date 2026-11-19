@@ -3,7 +3,7 @@ import type { Lang } from '../i18n/ui';
 /**
  * Теги на странице «Проекты». Каждый тег объединяет несколько категорий.
  * Порядок здесь = порядок в строке тегов. Показываются все теги, даже без проектов.
- * «Нейро» и «Эндиэй» пока ни с одной категорией не связаны: как отмечать такие проекты, ещё не решено.
+ * «Нейро» пока ни с одной категорией не связан. «Эндиэй» — категория nda, правила для неё — в «Правила кейса.md».
  */
 export const tags = [
   { slug: 'web', label: { ru: 'Веб', en: 'Web' } },
@@ -27,6 +27,7 @@ export const categories = [
   { slug: 'presentations', tag: 'graphics', label: { ru: 'Презентации', en: 'Presentations' } },
   { slug: 'navigation', tag: 'navigation', label: { ru: 'Навигация', en: 'Wayfinding' } },
   { slug: 'logos', tag: 'graphics', label: { ru: 'Логотип', en: 'Logo' } },
+  { slug: 'nda', tag: 'nda', label: { ru: 'Эндиэй', en: 'NDA' } },
 ] as const satisfies readonly { slug: string; tag: TagSlug; label: Record<Lang, string> }[];
 
 export type CategorySlug = (typeof categories)[number]['slug'];
@@ -39,3 +40,6 @@ export function categoryLabel(slug: string, lang: Lang): string {
 export function categoryTag(slug: string): TagSlug | undefined {
   return categories.find((c) => c.slug === slug)?.tag;
 }
+
+/** Кейс под NDA: название компании скрыто, обложка из генератора, фото размыты */
+export const isNda = (slug: string) => slug === 'nda';

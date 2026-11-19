@@ -19,6 +19,7 @@
  * и в браузере (оживание по наведению, страница /cover-generator).
  */
 import defaults from '../data/cover-settings.json';
+import { hashSeed } from './cover-hash';
 
 /**
  * Роль цвета подсказывает генератору, как его использовать:
@@ -137,17 +138,6 @@ export interface Cover {
   colorWave: TravelWave;
 }
 
-/** Строка → число (FNV-1a). Регистр и пробелы внутри важны, пробелы по краям — нет */
-function hashSeed(seed: string): number {
-  const text = seed.normalize('NFC').trim();
-  let hash = 0x811c9dc5;
-  for (let i = 0; i < text.length; i++) {
-    hash ^= text.charCodeAt(i);
-    hash = Math.imul(hash, 0x01000193);
-  }
-  return hash >>> 0;
-}
-
 /** Случайные числа от 0 до 1, одинаковые для одного сида (mulberry32) */
 function createRandom(seed: number): () => number {
   return () => {
@@ -204,14 +194,15 @@ const mixLab = (from: Lab, to: Lab, t: number): Lab => [
 /** Пара «от и до», даже если их перепутали местами */
 const range = (a: number, b: number): [number, number] => [Math.min(a, b), Math.max(a, b)];
 
-export function createCover(seed: string, settings: CoverSettings = coverDefaults): Cover {
+/** seed — строка (название) или уже посчитанное из неё число (кейсы под NDA, см. cover-hash.ts) */
+export function createCover(seed: string | number, settings: CoverSettings = coverDefaults): Cover {
   const palette = settings.palette.length >= 2 ? settings.palette : coverDefaults.palette;
   const [bandsMin, bandsMax] = range(Math.round(settings.bandsMin), Math.round(settings.bandsMax));
   const [accentsMin, accentsMax] = range(Math.round(settings.accentsMin), Math.round(settings.accentsMax));
   const [widthMin, widthMax] = range(settings.widthMin, settings.widthMax);
   const [blendMin, blendMax] = range(settings.blendMin, settings.blendMax);
 
-  const hash = hashSeed(seed);
+  const hash = typeof seed === 'number' ? seed >>> 0 : hashSeed(seed);
   const random = createRandom(hash);
   // Первые числа у похожих сидов похожи — пропускаем их
   for (let i = 0; i < 4; i++) random();

@@ -1,7 +1,7 @@
 import { getCollection, render, type CollectionEntry } from 'astro:content';
 import type { Lang } from '../i18n/ui';
 import { localePath } from '../i18n/utils';
-import { homeOrder } from '../data/home';
+import { isNda } from '../data/categories';
 
 type Project = CollectionEntry<'projects'>;
 type Translation = CollectionEntry<'translations'>;
@@ -14,7 +14,12 @@ export interface LocalizedProject {
   /** Для поисковиков и превью ссылок: начало текста кейса */
   description: string;
   url: string;
+  /** Есть ли у кейса страница. У кейса под NDA без фото её нет, карточка не нажимается */
+  opens: boolean;
 }
+
+/** Страница есть у всех кейсов, кроме кейсов под NDA без фото */
+const opens = (entry: Project) => !isNda(entry.data.category) || getGallery(entry.id).length > 0;
 
 async function translationsMap(): Promise<Map<string, Translation>> {
   const all = await getCollection('translations');
@@ -29,6 +34,7 @@ function localize(entry: Project, lang: Lang, tr?: Translation): LocalizedProjec
     title: t?.data.title ?? entry.data.title,
     description: excerpt((t ?? entry).body ?? ''),
     url: localePath(lang, `projects/${entry.id}`),
+    opens: opens(entry),
   };
 }
 
@@ -44,33 +50,10 @@ function compare(a: Project, b: Project): number {
   );
 }
 
-/** Все видимые проекты по дате. Так они стоят на странице «Проекты» */
+/** Все видимые проекты по дате. Так они стоят и на главной, и на странице «Проекты» */
 export async function getProjects(lang: Lang): Promise<LocalizedProject[]> {
   const [projects, tr] = await Promise.all([getCollection('projects', (p) => !p.data.hidden), translationsMap()]);
   return projects.sort(compare).map((p) => localize(p, lang, tr.get(`projects/${p.id}`)));
-}
-
-/**
- * Проекты для главной в порядке из src/data/home.ts.
- * Проекты не из списка — в конце, по дате, с предупреждением. Неизвестный адрес в списке — ошибка
- */
-export async function getHomeProjects(lang: Lang): Promise<LocalizedProject[]> {
-  const byDate = await getProjects(lang);
-  const all = await getCollection('projects');
-  const unknown = homeOrder.filter((id) => !all.some((p) => p.id === id));
-  if (unknown.length) {
-    throw new Error(`[главная] В src/data/home.ts нет таких проектов: ${unknown.join(', ')}`);
-  }
-  const rank = (id: string) => {
-    const i = homeOrder.indexOf(id);
-    return i === -1 ? homeOrder.length : i;
-  };
-  const missing = byDate.filter((p) => !homeOrder.includes(p.entry.id)).map((p) => p.entry.id);
-  if (missing.length) {
-    console.warn(`[главная] Этих проектов нет в src/data/home.ts, они стоят в конце по дате: ${missing.join(', ')}`);
-  }
-  // Сортировка устойчивая: проекты не из списка сохраняют порядок по дате
-  return [...byDate].sort((a, b) => rank(a.entry.id) - rank(b.entry.id));
 }
 
 export async function localizeProject(entry: Project, lang: Lang): Promise<LocalizedProject> {
@@ -78,9 +61,9 @@ export async function localizeProject(entry: Project, lang: Lang): Promise<Local
   return localize(entry, lang, tr.get(`projects/${entry.id}`));
 }
 
-/** Следующий проект по порядку, по кругу */
+/** Следующий проект по порядку, по кругу. Кейсы без страницы (NDA без фото) пропускаются */
 export async function getNextProject(current: Project, lang: Lang): Promise<LocalizedProject | undefined> {
-  const all = await getProjects(lang);
+  const all = (await getProjects(lang)).filter((p) => p.opens || p.entry.id === current.id);
   if (all.length < 2) return undefined;
   const i = all.findIndex((p) => p.entry.id === current.id);
   return all[(i + 1) % all.length];
@@ -91,9 +74,9 @@ export function renderLocalized(project: LocalizedProject) {
   return render(project.translation ?? project.entry);
 }
 
-/** Пути для страниц кейсов (включая скрытые — они открываются по ссылке) */
+/** Пути для страниц кейсов (включая скрытые — они открываются по ссылке). У кейсов под NDA без фото страницы нет */
 export async function projectPaths() {
-  const projects = await getCollection('projects');
+  const projects = (await getCollection('projects')).filter(opens);
   return projects.map((entry) => ({ params: { id: entry.id }, props: { entry } }));
 }
 

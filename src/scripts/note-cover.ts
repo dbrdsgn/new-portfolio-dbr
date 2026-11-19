@@ -1,4 +1,4 @@
-// Обложка заметки <note-cover seed="…">: по наведению полосы оживают,
+// Обложка заметки <note-cover seed="…"> (или hash="…" у кейсов под NDA): по наведению полосы оживают,
 // когда курсор уходит — быстро возвращаются на место.
 // Сама картинка уже нарисована при сборке (см. components/NoteCover.astro),
 // этот файл только двигает её. Если обложка стоит внутри ссылки-карточки,
@@ -8,7 +8,7 @@ import { createCover, coverStops, coverDefaults, type Cover, type CoverSettings 
 const reducedMotion = matchMedia('(prefers-reduced-motion: reduce)');
 
 export class NoteCover extends HTMLElement {
-  static observedAttributes = ['seed'];
+  static observedAttributes = ['seed', 'hash'];
 
   #settings: CoverSettings = coverDefaults;
   #cover: Cover | null = null;
@@ -84,7 +84,9 @@ export class NoteCover extends HTMLElement {
   };
 
   #paint() {
-    this.#cover ??= createCover(this.getAttribute('seed') ?? '', this.#settings);
+    // hash — число вместо названия, у кейсов под NDA
+    const hash = this.getAttribute('hash');
+    this.#cover ??= createCover(hash !== null ? Number(hash) : (this.getAttribute('seed') ?? ''), this.#settings);
     // Плавный разгон и торможение
     const eased = this.#amount * this.#amount * (3 - 2 * this.#amount);
     this.style.setProperty('--cover-stops', coverStops(this.#cover, this.#time, eased));

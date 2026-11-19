@@ -1,7 +1,7 @@
 ---
 title: "Логотип магазина «Плиточка»"
 category: logos
-date: "2023-01"
+date: "2023-02"
 cover: ./als-plitochka-cover.avif
 ---
 

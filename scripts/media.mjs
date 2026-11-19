@@ -33,6 +33,21 @@ const MAX_IMAGE_WIDTH = 2800;
  */
 const AVIF = { quality: 80, effort: 4, chromaSubsampling: '4:4:4' };
 const MAX_VIDEO_WIDTH = 1920;
+/**
+ * Кейсы под NDA (Категория: Эндиэй или nda): картинки и видео размываются уже в файле,
+ * чёткий оригинал на сайт не попадает. Сила размытия — доля ширины готового файла:
+ * 0.01 = радиус размытия 1% ширины (28 px у картинки 2800 px).
+ * Зерно поверх кладёт сайт, см. .project-gallery[data-nda] в src/styles/site.css
+ */
+const NDA_BLUR = 0.01;
+
+/** Кейс под NDA: в .md исходника категория «Эндиэй» или «nda» */
+function isNdaFolder(dir) {
+  return fs
+    .readdirSync(dir)
+    .filter((f) => f.toLowerCase().endsWith('.md'))
+    .some((f) => /^Категория:\s*(nda|эндиэй)\s*$/im.test(fs.readFileSync(path.join(dir, f), 'utf8')));
+}
 
 const only = process.argv.slice(2);
 
@@ -56,22 +71,28 @@ const upToDate = (src, dst) => fs.existsSync(dst) && fs.statSync(dst).mtimeMs >=
 
 const kb = (file) => Math.round(fs.statSync(file).size / 1024);
 
-async function image(src, dst) {
-  await sharp(src, { animated: false })
+async function image(src, dst, nda) {
+  let pipeline = sharp(src, { animated: false })
     .rotate()
-    .resize({ width: MAX_IMAGE_WIDTH, withoutEnlargement: true })
-    .avif(AVIF)
-    .toFile(dst);
+    .resize({ width: MAX_IMAGE_WIDTH, withoutEnlargement: true });
+  if (nda) {
+    const { width } = await sharp(src).metadata();
+    // Размытие идёт после уменьшения, поэтому считается от ширины готового файла
+    pipeline = pipeline.blur(Math.max(1, Math.min(width, MAX_IMAGE_WIDTH) * NDA_BLUR));
+  }
+  await pipeline.avif(AVIF).toFile(dst);
 }
 
-function video(ffmpeg, src, dst, sound) {
+function video(ffmpeg, src, dst, sound, nda) {
+  // У видео ширина заранее неизвестна, размытие считаем от предельной ширины
+  const blur = nda ? `,gblur=sigma=${(MAX_VIDEO_WIDTH * NDA_BLUR).toFixed(1)}` : '';
   execFileSync(
     ffmpeg,
     [
       '-y', '-loglevel', 'error',
       '-i', src,
       ...(sound ? ['-c:a', 'aac', '-b:a', '96k'] : ['-an']),
-      '-vf', `scale='min(${MAX_VIDEO_WIDTH},iw)':-2:flags=lanczos,format=yuv420p`,
+      '-vf', `scale='min(${MAX_VIDEO_WIDTH},iw)':-2:flags=lanczos${blur},format=yuv420p`,
       '-c:v', 'libx264', '-preset', 'slow', '-crf', '24',
       '-movflags', '+faststart',
       dst,
@@ -93,6 +114,7 @@ for (const { from, to } of SOURCES) {
     if (only.length && !only.includes(folder.name)) continue;
 
     const outDir = path.join(ROOT, to, folder.name);
+    const nda = isNdaFolder(path.join(srcRoot, folder.name));
     for (const file of fs.readdirSync(path.join(srcRoot, folder.name)).sort()) {
       const ext = path.extname(file).toLowerCase();
       const name = path.basename(file, path.extname(file));
@@ -103,8 +125,8 @@ for (const { from, to } of SOURCES) {
         const dst = path.join(outDir, `${name}.avif`);
         if (upToDate(src, dst)) { skipped++; continue; }
         fs.mkdirSync(outDir, { recursive: true });
-        await image(src, dst);
-        console.log(`${label} → ${name}.avif  ${kb(src)} → ${kb(dst)} КБ`);
+        await image(src, dst, nda);
+        console.log(`${label} → ${name}.avif  ${kb(src)} → ${kb(dst)} КБ${nda ? ', размыто (NDA)' : ''}`);
         done++;
       } else if (VIDEO.has(ext)) {
         const dst = path.join(outDir, `${name}.mp4`);
@@ -115,8 +137,8 @@ for (const { from, to } of SOURCES) {
           continue;
         }
         fs.mkdirSync(outDir, { recursive: true });
-        video(ffmpeg, src, dst, name.endsWith('-sound'));
-        console.log(`${label} → ${name}.mp4  ${kb(src)} → ${kb(dst)} КБ`);
+        video(ffmpeg, src, dst, name.endsWith('-sound'), nda);
+        console.log(`${label} → ${name}.mp4  ${kb(src)} → ${kb(dst)} КБ${nda ? ', размыто (NDA)' : ''}`);
         done++;
       }
     }

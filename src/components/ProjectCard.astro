@@ -1,10 +1,12 @@
 ---
 // Карточка проекта в сетке: обложка + название, ведёт на страницу кейса.
 // Astro нарезает обложку на несколько размеров, браузер берёт подходящий экрану.
+// У кейса под NDA обложка из генератора (по числу coverHash, без названия в HTML).
+// Если у него нет фото, страницы нет и карточка не нажимается.
 import { Image } from 'astro:assets';
 import type { LocalizedProject } from '../lib/projects';
 import NoteCover from './NoteCover.astro';
-import { categoryTag } from '../data/categories';
+import { categoryTag, isNda } from '../data/categories';
 
 interface Props {
   project: LocalizedProject;
@@ -14,19 +16,18 @@ interface Props {
 
 const { project, eager = false } = Astro.props;
 const { entry } = project;
-
-// ВРЕМЕННО, проба: у этих кейсов вместо картинки — сгенерированная обложка.
-// Сид — русское название кейса, поэтому обложка одинаковая на обоих языках.
-// Чтобы вернуть картинку, достаточно убрать адрес кейса из списка
-const GENERATED_COVER_DEMO = ['btc'];
-const generated = GENERATED_COVER_DEMO.includes(entry.id);
+const Card = project.opens ? 'a' : 'div';
 ---
 
-<a class="ids__sequence-item project-card" href={project.url} data-tag={categoryTag(entry.data.category)}>
+<Card
+  class="ids__sequence-item project-card"
+  href={project.opens ? project.url : undefined}
+  data-tag={categoryTag(entry.data.category)}
+>
   <div class="ids__rounded project-card__cover">
     {
-      generated ? (
-        <NoteCover seed={entry.data.title} />
+      isNda(entry.data.category) || !entry.data.cover ? (
+        <NoteCover hash={entry.data.coverHash} />
       ) : (
         <Image
           src={entry.data.cover}
@@ -41,4 +42,4 @@ const generated = GENERATED_COVER_DEMO.includes(entry.id);
     }
   </div>
   <h2 class="project-card__title">{project.title}</h2>
-</a>
+</Card>

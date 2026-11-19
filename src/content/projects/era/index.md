@@ -1,7 +1,7 @@
 ---
 title: "Упаковка для «Эра»"
 category: packaging
-date: "2023-01"
+date: "2023-04"
 cover: ./era-cover.avif
 ---
 

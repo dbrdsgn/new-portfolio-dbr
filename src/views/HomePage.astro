@@ -1,11 +1,11 @@
 ---
-// Главная: сетка проектов в порядке из src/data/home.ts. Без тегов —
+// Главная: сетка проектов по дате, тот же порядок, что на странице «Проекты». Без тегов —
 // фильтр есть только на странице «Проекты»
 import BaseLayout from '../layouts/BaseLayout.astro';
 import ProjectCard from '../components/ProjectCard.astro';
 import type { Lang } from '../i18n/ui';
 import { useTranslations } from '../i18n/utils';
-import { getHomeProjects } from '../lib/projects';
+import { getProjects } from '../lib/projects';
 
 interface Props {
   lang: Lang;
@@ -13,7 +13,7 @@ interface Props {
 
 const { lang } = Astro.props;
 const t = useTranslations(lang);
-const projects = await getHomeProjects(lang);
+const projects = await getProjects(lang);
 ---
 
 <BaseLayout>
