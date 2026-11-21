@@ -28,14 +28,15 @@ jobs:
           node-version: 24
           cache: npm
 
-      # Нарезанные картинки кешируются между сборками: обрабатываются только новые
+      - run: npm ci
+
+      # Нарезанные картинки кешируются между сборками: обрабатываются только новые.
+      # Стоит после npm ci: тот удаляет node_modules целиком и стёр бы восстановленный кеш
       - uses: actions/cache@v4
         with:
           path: node_modules/.astro
           key: astro-images-${{ hashFiles('src/content/**') }}
           restore-keys: astro-images-
-
-      - run: npm ci
 
       - run: npm run build
         env:
