@@ -4,6 +4,7 @@ subtitle: ""
 category: packaging
 date: "2023-04"
 cover: ./era-cover.avif
+coverFrame: ./era-8-big.avif
 ---
 
 Сделано за 30 дней в 2023 году

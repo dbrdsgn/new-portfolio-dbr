@@ -5,6 +5,7 @@ category: branding
 date: "2025-01"
 order: 30
 cover: ./exitdesign-pres-cover.avif
+coverFrame: ./exitdesign-pres-3-big.avif
 ---
 
 Сделано за 2 дня в 2025 году с Соней Грищенко

@@ -4,6 +4,7 @@ subtitle: ""
 category: branding
 date: "2024-02"
 cover: ./wb-car-cover.avif
+coverFrame: ./wb-car-3-big.avif
 ---
 
 Сделано за 2 дня в 2024 году

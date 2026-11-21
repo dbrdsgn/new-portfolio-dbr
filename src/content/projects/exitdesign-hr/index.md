@@ -5,6 +5,7 @@ category: branding
 date: "2025-01"
 order: 10
 cover: ./exitdesign-hr-cover.avif
+coverFrame: ./exitdesign-hr-9-big.avif
 ---
 
 Сделано за 10 дней в 2025 году

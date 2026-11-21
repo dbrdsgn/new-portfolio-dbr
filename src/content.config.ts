@@ -39,6 +39,11 @@ const projects = defineCollection({
        * Обычно — название кейса
        */
       coverSeed: z.string().optional(),
+      /**
+       * Второе фото обложки: на правой половине обложки вместо неё показывается оно
+       * (IDS .ids__inline-gallery). Первое фото — сама обложка (cover). У генератора второго фото нет
+       */
+      coverFrame: image().optional(),
       /** Только для кейсов с одинаковой датой: меньше — выше. Без него — по имени папки */
       order: z.number().optional(),
       /** Убрать с сайта: страница открывается по прямой ссылке, но карточки нет */
@@ -50,6 +55,9 @@ const projects = defineCollection({
       }
       if (data.category !== 'nda' && !data.cover && !data.coverSeed) {
         ctx.addIssue({ code: 'custom', path: ['cover'], message: 'нет обложки: нужен файл <адрес>-cover или coverSeed для генератора' });
+      }
+      if (data.coverFrame && (!data.cover || data.category === 'nda')) {
+        ctx.addIssue({ code: 'custom', path: ['coverFrame'], message: 'второе фото обложки только у обложки-файла: у генератора его нет' });
       }
       if (data.cover && data.coverSeed) {
         ctx.addIssue({ code: 'custom', path: ['coverSeed'], message: 'обложка или файлом, или из генератора (coverSeed), не обе сразу' });

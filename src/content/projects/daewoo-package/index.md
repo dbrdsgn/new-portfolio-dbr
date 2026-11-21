@@ -4,6 +4,7 @@ subtitle: ""
 category: packaging
 date: "2024-01"
 cover: ./daewoo-package-cover.avif
+coverFrame: ./daewoo-package-4-big.avif
 ---
 
 Сделано за 2 дня в 2024 году

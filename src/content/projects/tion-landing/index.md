@@ -4,6 +4,7 @@ subtitle: ""
 category: web
 date: "2026-02"
 cover: ./tion-landing-cover.avif
+coverFrame: ./tion-landing-1-big.avif
 ---
 
 Сделано за 12 дней в 2026 году

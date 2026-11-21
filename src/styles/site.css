@@ -187,6 +187,12 @@
     object-fit: cover;
   }
 
+  /* Обложка из двух фото (coverFrame), пропорция та же, что у обычной обложки */
+  & .project-card__frames {
+    --img-aspect-ratio: var(--cover-ratio);
+    height: 100%;
+  }
+
   /* Сгенерированная обложка занимает карточку целиком: пропорцию и скругление задаёт карточка */
   & note-cover {
     height: 100%;

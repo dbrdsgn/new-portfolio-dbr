@@ -4,6 +4,7 @@ subtitle: ""
 category: logos
 date: "2026-01"
 cover: ./tion-logo-cover.avif
+coverFrame: ./tion-logo-3-big.avif
 ---
 
 Создал логотип для отечественного производителя климатической техники. Знак работает в шрифтовом виде и как иконка для диджитал форматов.

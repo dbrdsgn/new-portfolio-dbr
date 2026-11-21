@@ -5,6 +5,7 @@ category: web
 date: "2025-01"
 order: 20
 cover: ./exitdesign-site-cover.avif
+coverFrame: ./exitdesign-site-1-big.avif
 ---
 
 Сделано за 60 дней в 2025 году

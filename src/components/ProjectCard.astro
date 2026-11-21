@@ -8,6 +8,7 @@ import { Image } from 'astro:assets';
 import type { LocalizedProject } from '../lib/projects';
 import NoteCover from './NoteCover.astro';
 import { categoryTag, isNda } from '../data/categories';
+import '../styles/ids/css/components/promo-block.css';
 
 interface Props {
   project: LocalizedProject;
@@ -27,7 +28,21 @@ const Card = project.opens ? 'a' : 'div';
 >
   <div class="ids__rounded project-card__cover">
     {
-      isNda(entry.data.category) || !entry.data.cover ? (
+      entry.data.cover && entry.data.coverFrame && !isNda(entry.data.category) ? (
+        <div class="ids__inline-gallery project-card__frames">
+          {[entry.data.cover, entry.data.coverFrame].map((frame, i) => (
+            <Image
+              src={frame}
+              alt=""
+              widths={[400, 800, 1200, 1800]}
+              sizes="(width < 768px) 100vw, (width < 1280px) 50vw, 33vw"
+              format="avif"
+              quality={80}
+              loading={eager && i === 0 ? 'eager' : 'lazy'}
+            />
+          ))}
+        </div>
+      ) : isNda(entry.data.category) || !entry.data.cover ? (
         <NoteCover hash={entry.data.coverHash} seed={entry.data.coverSeed} />
       ) : (
         <Image
@@ -45,3 +60,17 @@ const Card = project.opens ? 'a' : 'div';
   {project.subtitle && <p class="project-card__subtitle">{project.subtitle}</p>}
   <h2 class="project-card__title"><span>{project.title}</span></h2>
 </Card>
+
+<script>
+  // Два фото обложки: скрипт IDS делит обложку на две половины, на правой — второе фото
+  // (на телефоне — по движению пальца). Когда курсор уходит с обложки, возвращаемся к обложке
+  import '../styles/ids/js/promo-block.js';
+
+  for (const frames of document.querySelectorAll<HTMLElement>('.project-card__frames')) {
+    frames.addEventListener('pointerleave', () => {
+      frames.querySelectorAll<HTMLImageElement>(':scope > img').forEach((img, i) => {
+        img.style.visibility = i === 0 ? 'visible' : 'hidden';
+      });
+    });
+  }
+</script>

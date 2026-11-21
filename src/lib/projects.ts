@@ -177,7 +177,7 @@ const fileName = (path: string) => path.split('/').pop()!;
  * Галерея кейса = все картинки и видео из его папки по номерам.
  * Имя файла: <адрес>-<номер>-<размер>.avif, видео — .mp4 с постером <адрес>-<номер>-<размер>-poster.avif.
  * Видео со звуком: <адрес>-<номер>-<размер>-sound.mp4, постер без метки.
- * Обложка <адрес>-cover.avif в галерею не входит.
+ * Обложка <адрес>-cover.avif и отдельные кадры обложки <адрес>-cover-<номер>.avif в галерею не входят.
  * Имя не по правилам или видео без постера — сборка останавливается и называет файл.
  */
 export function getGallery(id: string): GalleryItem[] {
@@ -190,10 +190,11 @@ export function getGallery(id: string): GalleryItem[] {
     return { file, number: Number(m[1]), size: m[2] as Size, sound: Boolean(m[3]), poster: Boolean(m[4]) };
   };
 
+  const cover = new RegExp(`^${id}-cover(-\\d+)?\\.avif$`);
   const items: GalleryItem[] = [];
   const posters = new Map<number, ImageMetadata>();
   for (const [path, mod] of Object.entries(images)) {
-    if (!path.startsWith(prefix) || fileName(path) === `${id}-cover.avif`) continue;
+    if (!path.startsWith(prefix) || cover.test(fileName(path))) continue;
     const f = parse(path);
     if (f.poster) posters.set(f.number, mod.default);
     else items.push({ kind: 'image', number: f.number, size: f.size, name: f.file, image: mod.default });
